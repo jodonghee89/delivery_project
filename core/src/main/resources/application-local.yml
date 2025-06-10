@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: core
+  config:
+    import:
+      - logging.yml
+  datasource:
+    primary:
+      url: jdbc:mysql//localhost:3307/delivery
+      username: root
+      password: rootpass
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    secondary:
+      url: jdbc:mysql//localhost:3308/delivery
+      username: root
+      password: rootpass
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+logging:
+  level:
+    root: DEBUG

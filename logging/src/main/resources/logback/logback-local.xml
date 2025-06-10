@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+  <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+
+  <property name="LOG_PATH" value="~/logs"/>
+  <property name="APP_NAME" value="delivery"/>
+
+  <!-- 콘솔 로그 패턴 -->
+  <property name="CONSOLE_LOG_PATTERN"
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Seoul} ${spring-profile} %clr(${level:-%5p}) - %clr([%mdc{trace_id}, %mdc{span_id}]){magenta} [%thread] %clr([%logger>%method]){cyan} : %msg%n%xThrowable"/>
+
+  <!-- 파일 로그 패턴 -->
+<!--  <property name="FILE_LOG_PATTERN"-->
+<!--    value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>-->
+
+  <!-- 콘솔 로그 설정 -->
+  <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+  <!-- 파일 로그 설정 (롤링) -->
+<!--  <appender name="FileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>${LOG_PATH}/${APP_NAME}.log</file>-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+<!--            <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>-->
+<!--            <maxHistory>30</maxHistory>-->
+<!--            <cleanHistoryOnStart>true</cleanHistoryOnStart>-->
+<!--        </rollingPolicy>-->
+<!--        <encoder>-->
+<!--            <pattern>${FILE_LOG_PATTERN}</pattern>-->
+<!--            <charset>UTF-8</charset>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+
+  <root>
+    <appender-ref ref="Console"/>
+  </root>
+
+</configuration>

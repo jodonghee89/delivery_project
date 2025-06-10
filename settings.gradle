@@ -1,2 +1,2 @@
 rootProject.name = 'delivery'
-include 'core', 'api'
+include 'core', 'api', 'logging', 'notification'

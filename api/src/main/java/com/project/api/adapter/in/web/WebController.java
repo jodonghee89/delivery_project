@@ -1,4 +1,4 @@
-package com.project.api.adapter.in;
+package com.project.api.adapter.in.web;
 
 import com.project.core.StringUtils;
 import org.springframework.http.MediaType;

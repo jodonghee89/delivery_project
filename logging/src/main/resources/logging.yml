@@ -1,0 +1,14 @@
+spring:
+  sleuth:
+    trace-id128: true
+#    추적 시스템에 traceId 전송용 설정
+#    1 이면 추적 시스템에 100% 모두 보냄
+#    0.3 이면 난수 생성해서 0.3 이하일 때만 추적 시스템에 보냄
+#    sampler:
+#      probability: 0.3
+    log:
+      slf4j:
+        enabled: true
+
+logging:
+  config: classpath:logback/logback-${spring.profiles.active}.xml

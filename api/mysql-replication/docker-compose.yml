@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  primary-mysql:
+    image: mysql:8.0
+    container_name: primary-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: delivery
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./primary/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./primary/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - /Users/user/developers/study/mysql_volume/primary:/var/lib/mysql
+
+
+  secondary-mysql:
+    image: mysql:8.0
+    container_name: secondary-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3308:3306"
+    depends_on:
+      - primary-mysql
+    volumes:
+      - ./secondary/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./secondary/setup-replication.sh:/setup-replication.sh
+      - /Users/user/developers/study/mysql_volume/secondary:/var/lib/mysql
+    entrypoint: ["/bin/bash", "-c", "docker-entrypoint.sh mysqld & sleep 10 && bash /setup-replication.sh && wait"]

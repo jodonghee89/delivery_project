@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: api
+  config:
+    import:
+      - logging.yml
+
+
+logging:
+  level:
+    root: DEBUG
+
