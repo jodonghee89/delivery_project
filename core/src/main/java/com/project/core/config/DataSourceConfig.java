@@ -60,6 +60,7 @@ class DataSourceConfig {
     routingDataSource.setTargetDataSources(targetDataSources);
     routingDataSource.setDefaultTargetDataSource(primaryDataSource);
 
+
     return routingDataSource;
   }
 }
