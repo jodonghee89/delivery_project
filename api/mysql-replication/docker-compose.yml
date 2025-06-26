@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   primary-mysql:
     image: mysql:8.0
@@ -12,8 +10,7 @@ services:
     volumes:
       - ./primary/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./primary/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - /Users/user/developers/study/mysql_volume/primary:/var/lib/mysql
-
+      - mysql_primary_data:/var/lib/mysql
 
   secondary-mysql:
     image: mysql:8.0
@@ -27,5 +24,9 @@ services:
     volumes:
       - ./secondary/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./secondary/setup-replication.sh:/setup-replication.sh
-      - /Users/user/developers/study/mysql_volume/secondary:/var/lib/mysql
+      - mysql_secondary_data:/var/lib/mysql
     entrypoint: ["/bin/bash", "-c", "docker-entrypoint.sh mysqld & sleep 10 && bash /setup-replication.sh && wait"]
+
+volumes:
+  mysql_primary_data:
+  mysql_secondary_data:
