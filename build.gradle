@@ -3,23 +3,18 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-allprojects {
-
-}
-
 ext {
     set('springCloudVersion', "2024.0.1")
 }
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
 
     sourceCompatibility = '17'
     targetCompatibility = '17'
 
-    group = 'com.example'
+    group = 'com.project'
     version = '1.0.0-SNAPSHOT'
 
     repositories {
@@ -43,12 +38,17 @@ subprojects {
     tasks.named('test') {
         useJUnitPlatform()
     }
+}
 
-    tasks.matching { it.name == 'build' }.configureEach {
+// 라이브러리 모듈들에 대한 공통 설정
+configure(subprojects.findAll { it.name != 'api' }) {
+    apply plugin: 'org.springframework.boot'
+    
+    bootJar {
         enabled = false
     }
-
-    tasks.matching { it.name == 'bootJar' }.configureEach {
-        enabled = false
+    
+    jar {
+        enabled = true
     }
 }
