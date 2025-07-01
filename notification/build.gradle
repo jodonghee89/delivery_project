@@ -2,11 +2,3 @@ dependencies {
     // 알림 관련 의존성만 유지
 }
 
-bootJar {
-    enabled = false
-}
-
-jar {
-    enabled = true
-}
-

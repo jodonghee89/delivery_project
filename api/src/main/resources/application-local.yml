@@ -1,12 +1,80 @@
 spring:
   application:
     name: api
-  config:
-    import:
-      - logging.yml
 
+  datasource:
+    primary:
+      url: jdbc:mysql://localhost:3307/delivery?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+      username: root
+      password: rootpass
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+    secondary:
+      url: jdbc:mysql://localhost:3308/delivery?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+      username: root
+      password: rootpass
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 15
+        minimum-idle: 5
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+
+# JPA 설정 (Entity 클래스 추가 시 활성화)
+#  jpa:
+#    hibernate:
+#      ddl-auto: create-drop
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# SpringDoc 3.x 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+  packages-to-scan: com.project.api
+  paths-to-match: /delivery/**
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings,beans,env
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    mappings:
+      enabled: true
+    beans:
+      enabled: true
+    env:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
 
 logging:
   level:
-    root: DEBUG
-
+    root: INFO
+    com.project: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG 

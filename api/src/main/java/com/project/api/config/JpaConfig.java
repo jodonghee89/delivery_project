@@ -1,9 +1,8 @@
 package com.project.api.config;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@Configuration
-@EnableJpaAuditing
+// Entity 클래스 추가 시 주석 해제
+//@Configuration
+//@EnableJpaAuditing
 public class JpaConfig {
 } 
