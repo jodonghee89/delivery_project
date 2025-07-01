@@ -42,6 +42,12 @@ subprojects {
 
 // 라이브러리 모듈들에 대한 공통 설정
 configure(subprojects.findAll { it.name != 'api' }) {
+    apply plugin: 'org.springframework.boot'
+
+    bootJar {
+        enabled = false
+    }
+
     jar {
         enabled = true
     }
