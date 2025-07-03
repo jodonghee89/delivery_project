@@ -26,15 +26,14 @@ spring:
         idle-timeout: 600000
         max-lifetime: 1800000
 
-# JPA 설정 (Entity 클래스 추가 시 활성화)
-#  jpa:
-#    hibernate:
-#      ddl-auto: create-drop
-#    show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
-#        dialect: org.hibernate.dialect.MySQL8Dialect
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
 
 # SpringDoc 3.x 설정
 springdoc:

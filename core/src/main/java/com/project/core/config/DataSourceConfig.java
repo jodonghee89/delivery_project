@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 @Configuration
-class DataSourceConfig {
+public class DataSourceConfig {
 
   @Bean
   @ConfigurationProperties("spring.datasource.primary")
