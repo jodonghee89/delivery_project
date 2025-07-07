@@ -66,7 +66,14 @@ public class Customer {
     private List<CustomerAddress> addresses = new ArrayList<>();
 
     @Builder
-    private Customer(String email, String password, String name, String phone) {
+    private Customer(String email, String password, String name, String phoneNumber, Long customerId) {
+        // ID만으로 생성하는 경우 (Order에서 참조용)
+        if (customerId != null && email == null) {
+            this.customerId = customerId;
+            return;
+        }
+        
+        // 일반적인 생성
         validateEmail(email);
         validatePassword(password);
         validateName(name);
@@ -74,7 +81,7 @@ public class Customer {
         this.email = email;
         this.password = password;
         this.name = name;
-        this.phone = phone;
+        this.phone = phoneNumber;
     }
 
     // == 비즈니스 로직 == //

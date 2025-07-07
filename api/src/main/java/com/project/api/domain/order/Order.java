@@ -33,13 +33,11 @@ public class Order {
     @Column(name = "order_id")
     private Long orderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @Column(name = "customer_id", nullable = false)
+    private Long customerId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
+    @Column(name = "store_id", nullable = false)
+    private Long storeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_person_id")
@@ -73,23 +71,27 @@ public class Order {
     private List<OrderStatusHistory> statusHistories = new ArrayList<>();
 
     @Builder
-    private Order(Customer customer, Store store, PaymentMethod paymentMethod, 
-                  String deliveryAddress, String memo) {
-        validateCustomer(customer);
-        validateStore(store);
-        validatePaymentMethod(paymentMethod);
+    private Order(Long customerId, Long storeId, String deliveryAddress, String memo,
+                  String paymentMethodStr, OrderStatus orderStatus, Integer totalAmount,
+                  LocalDateTime orderDate, LocalDateTime estimatedDeliveryTime) {
+        
+        validateCustomerId(customerId);
+        validateStoreId(storeId);
         validateDeliveryAddress(deliveryAddress);
         
-        this.customer = customer;
-        this.store = store;
-        this.paymentMethod = paymentMethod;
+        this.customerId = customerId;
+        this.storeId = storeId;
         this.deliveryAddress = deliveryAddress;
         this.memo = memo;
-        this.status = OrderStatus.PENDING;
-        this.totalPrice = BigDecimal.ZERO;
         
-        // 초기 상태 이력 추가
-        addStatusHistory(OrderStatus.PENDING);
+        // PaymentMethod 설정
+        if (paymentMethodStr != null) {
+            this.paymentMethod = PaymentMethod.valueOf(paymentMethodStr);
+        }
+        
+        this.status = orderStatus != null ? orderStatus : OrderStatus.PENDING;
+        this.totalPrice = totalAmount != null ? BigDecimal.valueOf(totalAmount) : BigDecimal.ZERO;
+        this.orderTime = orderDate != null ? orderDate : LocalDateTime.now();
     }
 
     // == 비즈니스 로직 == //
@@ -194,10 +196,102 @@ public class Order {
     }
 
     /**
-     * 주문 가능 여부 확인
+     * 주문 취소 가능 여부 확인
      */
     public boolean canBeCancelled() {
         return status == OrderStatus.PENDING || status == OrderStatus.CONFIRMED;
+    }
+
+    /**
+     * 상태 변경 가능 여부 확인
+     */
+    public boolean canChangeStatusTo(OrderStatus newStatus) {
+        return isValidStatusTransition(this.status, newStatus);
+    }
+
+    /**
+     * 주문 상태 업데이트
+     */
+    public void updateStatus(OrderStatus newStatus, String reason) {
+        validateStatusTransition(newStatus);
+        changeStatus(newStatus);
+    }
+
+    /**
+     * 특별 요청사항 업데이트
+     */
+    public void updateSpecialRequests(String specialRequests) {
+        this.memo = specialRequests;
+    }
+
+    /**
+     * ID 반환 (Service에서 사용)
+     */
+    public Long getId() {
+        return this.orderId;
+    }
+
+    /**
+     * 고객 ID 반환
+     */
+    public Long getCustomerId() {
+        return this.customerId;
+    }
+
+    /**
+     * 매장 ID 반환
+     */
+    public Long getStoreId() {
+        return this.storeId;
+    }
+
+    /**
+     * 배달원 ID 반환
+     */
+    public Long getDeliveryPersonId() {
+        return this.deliveryPerson != null ? this.deliveryPerson.getId() : null;
+    }
+
+    /**
+     * 주문 상태 반환
+     */
+    public OrderStatus getOrderStatus() {
+        return this.status;
+    }
+
+    /**
+     * 총 금액 반환 (Integer 타입)
+     */
+    public Integer getTotalAmount() {
+        return this.totalPrice != null ? this.totalPrice.intValue() : 0;
+    }
+
+    /**
+     * 결제 방법 반환 (String 타입)
+     */
+    public String getPaymentMethod() {
+        return this.paymentMethod != null ? this.paymentMethod.name() : null;
+    }
+
+    /**
+     * 주문 날짜 반환
+     */
+    public LocalDateTime getOrderDate() {
+        return this.orderTime;
+    }
+
+    /**
+     * 예상 배달 시간 반환 (임시로 주문 시간 + 30분)
+     */
+    public LocalDateTime getEstimatedDeliveryTime() {
+        return this.orderTime != null ? this.orderTime.plusMinutes(30) : null;
+    }
+
+    /**
+     * 특별 요청사항 반환
+     */
+    public String getSpecialRequests() {
+        return this.memo;
     }
 
     /**
@@ -216,15 +310,15 @@ public class Order {
 
     // == 유효성 검증 == //
     
-    private void validateCustomer(Customer customer) {
-        if (customer == null) {
-            throw new IllegalArgumentException("고객 정보는 필수입니다.");
+    private void validateCustomerId(Long customerId) {
+        if (customerId == null) {
+            throw new IllegalArgumentException("고객 ID는 필수입니다.");
         }
     }
 
-    private void validateStore(Store store) {
-        if (store == null) {
-            throw new IllegalArgumentException("매장 정보는 필수입니다.");
+    private void validateStoreId(Long storeId) {
+        if (storeId == null) {
+            throw new IllegalArgumentException("매장 ID는 필수입니다.");
         }
     }
 

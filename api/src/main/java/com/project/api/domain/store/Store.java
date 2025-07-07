@@ -71,7 +71,14 @@ public class Store {
 
     @Builder
     private Store(StoreOwner owner, String name, String description, StoreCategory category, 
-                  String address, String phone) {
+                  String address, String phone, Long storeId) {
+        // ID만으로 생성하는 경우 (Order에서 참조용)
+        if (storeId != null && name == null) {
+            this.storeId = storeId;
+            return;
+        }
+        
+        // 일반적인 생성
         validateOwner(owner);
         validateName(name);
         validateCategory(category);
@@ -87,6 +94,13 @@ public class Store {
         
         // 통계 객체 초기화
         this.statistics = StoreStatistics.createInitial(this);
+    }
+
+    /**
+     * ID 반환 (Service에서 사용)
+     */
+    public Long getId() {
+        return this.storeId;
     }
 
     // == 비즈니스 로직 == //

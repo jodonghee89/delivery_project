@@ -66,7 +66,14 @@ public class Menu {
 
     @Builder
     private Menu(Store store, MenuCategory category, String name, String description, 
-                 BigDecimal price, Integer stock, boolean isRecommended) {
+                 BigDecimal price, Integer stock, boolean isRecommended, Long menuId) {
+        // ID만으로 생성하는 경우 (OrderItem에서 참조용)
+        if (menuId != null && name == null) {
+            this.menuId = menuId;
+            return;
+        }
+        
+        // 일반적인 생성
         validateStore(store);
         validateCategory(category);
         validateName(name);
@@ -80,6 +87,13 @@ public class Menu {
         this.price = price;
         this.stock = stock != null ? stock : 0;
         this.isRecommended = isRecommended;
+    }
+
+    /**
+     * ID 반환 (Service에서 사용)
+     */
+    public Long getId() {
+        return this.menuId;
     }
 
     // == 비즈니스 로직 == //

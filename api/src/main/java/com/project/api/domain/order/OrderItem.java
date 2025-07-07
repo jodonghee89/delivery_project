@@ -45,17 +45,61 @@ public class OrderItem {
     private BigDecimal unitPrice;
 
     @Builder
-    private OrderItem(Order order, Menu menu, MenuOption menuOption, Integer quantity, BigDecimal unitPrice) {
-        validateOrder(order);
-        validateMenu(menu);
-        validateQuantity(quantity);
-        validateUnitPrice(unitPrice);
-        
-        this.order = order;
-        this.menu = menu;
-        this.menuOption = menuOption;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
+    private OrderItem(Order order, Menu menu, MenuOption menuOption, Integer quantity, BigDecimal unitPrice,
+                      Long menuId, Integer price, String specialRequests) {
+        // 기존 방식 (Menu 객체 사용)
+        if (menu != null) {
+            validateOrder(order);
+            validateMenu(menu);
+            validateQuantity(quantity);
+            validateUnitPrice(unitPrice);
+            
+            this.order = order;
+            this.menu = menu;
+            this.menuOption = menuOption;
+            this.quantity = quantity;
+            this.unitPrice = unitPrice;
+        }
+        // 새로운 방식 (ID 기반 생성 - Service에서 사용)
+        else if (menuId != null) {
+            validateOrder(order);
+            validateQuantity(quantity);
+            
+            this.order = order;
+            // 임시 Menu 객체 생성 (ID만 설정)
+            this.menu = Menu.builder().menuId(menuId).build();
+            this.quantity = quantity;
+            this.unitPrice = price != null ? BigDecimal.valueOf(price) : BigDecimal.ZERO;
+            // specialRequests는 별도 필드가 필요하지만 일단 생략
+        }
+    }
+
+    /**
+     * ID 반환 (Service에서 사용)
+     */
+    public Long getId() {
+        return this.orderItemId;
+    }
+
+    /**
+     * 메뉴 ID 반환
+     */
+    public Long getMenuId() {
+        return this.menu != null ? this.menu.getId() : null;
+    }
+
+    /**
+     * 가격 반환 (Integer 타입)
+     */
+    public Integer getPrice() {
+        return this.unitPrice != null ? this.unitPrice.intValue() : 0;
+    }
+
+    /**
+     * 특별 요청사항 반환 (임시로 null 반환)
+     */
+    public String getSpecialRequests() {
+        return null; // TODO: specialRequests 필드 추가 필요
     }
 
     // == 비즈니스 로직 == //

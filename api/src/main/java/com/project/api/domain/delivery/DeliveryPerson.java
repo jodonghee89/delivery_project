@@ -53,6 +53,13 @@ public class DeliveryPerson {
         this.vehicleType = vehicleType;
     }
 
+    /**
+     * ID 반환 (외부 인터페이스 일관성을 위해)
+     */
+    public Long getId() {
+        return deliveryPersonId;
+    }
+
     public void updateInfo(String name, String phone, String vehicleType) {
         this.name = name;
         this.phone = phone;
