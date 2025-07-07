@@ -42,6 +42,22 @@ public class Customer {
     @Column(name = "phone", length = 20)
     private String phone;
 
+    // == Getter 메서드 추가 == //
+    
+    /**
+     * ID 반환 (외부 인터페이스 일관성을 위해)
+     */
+    public Long getId() {
+        return customerId;
+    }
+
+    /**
+     * 전화번호 반환 (외부 인터페이스 일관성을 위해)
+     */
+    public String getPhoneNumber() {
+        return phone;
+    }
+
     @CreatedDate
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -66,10 +82,18 @@ public class Customer {
     /**
      * 고객 정보 수정
      */
-    public void updateInfo(String name, String phone) {
-        validateName(name);
-        this.name = name;
-        this.phone = phone;
+    public void updateInfo(String name, String email, String phone) {
+        if (name != null) {
+            validateName(name);
+            this.name = name;
+        }
+        if (email != null) {
+            validateEmail(email);
+            this.email = email;
+        }
+        if (phone != null) {
+            this.phone = phone;
+        }
     }
 
     /**
@@ -86,19 +110,23 @@ public class Customer {
     /**
      * 주소 추가
      */
-    public void addAddress(String address, boolean isDefault) {
-        if (isDefault) {
-            // 기존 기본 주소들을 일반 주소로 변경
-            addresses.forEach(addr -> addr.unsetDefault());
-        }
-        
-        CustomerAddress customerAddress = CustomerAddress.builder()
-                .customer(this)
-                .address(address)
-                .isDefault(isDefault)
-                .build();
-                
+    public void addAddress(CustomerAddress customerAddress) {
         this.addresses.add(customerAddress);
+        customerAddress.setCustomer(this);
+    }
+
+    /**
+     * 주소 제거
+     */
+    public void removeAddress(CustomerAddress customerAddress) {
+        this.addresses.remove(customerAddress);
+    }
+
+    /**
+     * 기본 주소 해제
+     */
+    public void clearDefaultAddress() {
+        addresses.forEach(addr -> addr.unsetDefault());
     }
 
     /**

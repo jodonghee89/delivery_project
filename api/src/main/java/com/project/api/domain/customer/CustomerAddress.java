@@ -34,20 +34,40 @@ public class CustomerAddress {
     @Column(name = "address", columnDefinition = "TEXT", nullable = false)
     private String address;
 
+    @Column(name = "address_detail", columnDefinition = "TEXT")
+    private String addressDetail;
+
+    @Column(name = "zip_code", length = 10)
+    private String zipCode;
+
+    @Column(name = "nickname", length = 50)
+    private String nickname;
+
     @Column(name = "is_default", nullable = false)
     private boolean isDefault;
+
+    // == Getter 메서드 추가 == //
+    
+    /**
+     * ID 반환 (외부 인터페이스 일관성을 위해)
+     */
+    public Long getId() {
+        return addressId;
+    }
 
     @CreatedDate
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    private CustomerAddress(Customer customer, String address, boolean isDefault) {
+    private CustomerAddress(Customer customer, String address, String addressDetail, String zipCode, String nickname, boolean isDefault) {
         validateAddress(address);
-        validateCustomer(customer);
         
         this.customer = customer;
         this.address = address;
+        this.addressDetail = addressDetail;
+        this.zipCode = zipCode;
+        this.nickname = nickname;
         this.isDefault = isDefault;
     }
 
@@ -56,9 +76,23 @@ public class CustomerAddress {
     /**
      * 주소 정보 수정
      */
-    public void updateAddress(String newAddress) {
-        validateAddress(newAddress);
-        this.address = newAddress;
+    public void updateAddress(String newAddress, String newAddressDetail, String newZipCode, String newNickname, Boolean newIsDefault) {
+        if (newAddress != null) {
+            validateAddress(newAddress);
+            this.address = newAddress;
+        }
+        if (newAddressDetail != null) {
+            this.addressDetail = newAddressDetail;
+        }
+        if (newZipCode != null) {
+            this.zipCode = newZipCode;
+        }
+        if (newNickname != null) {
+            this.nickname = newNickname;
+        }
+        if (newIsDefault != null) {
+            this.isDefault = newIsDefault;
+        }
     }
 
     /**
@@ -80,6 +114,13 @@ public class CustomerAddress {
      */
     public boolean isDefault() {
         return this.isDefault;
+    }
+
+    /**
+     * Customer 설정 (패키지 내부 사용)
+     */
+    void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     // == 유효성 검증 == //
