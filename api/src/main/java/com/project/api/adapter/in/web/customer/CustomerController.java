@@ -38,15 +38,19 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<CustomerResponse> createCustomer(
             @Valid @RequestBody CreateCustomerRequest request) {
-        Customer customer = createCustomerUseCase.createCustomer(
-            request.name(),
-            request.email(),
-            request.phoneNumber(),
-            request.password(),
-            request.address(),
-            request.addressDetail(),
-            request.zipCode()
-        );
+        // DTO를 Command로 변환
+        CreateCustomerUseCase.CreateCustomerCommand command = 
+            new CreateCustomerUseCase.CreateCustomerCommand(
+                request.name(),
+                request.email(),
+                request.phoneNumber(),
+                request.password(),
+                request.address(),
+                request.addressDetail(),
+                request.zipCode()
+            );
+        
+        Customer customer = createCustomerUseCase.createCustomer(command);
         CustomerResponse response = CustomerMapper.toResponse(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -1,6 +1,5 @@
 package com.project.api.application.service.customer;
 
-import com.project.api.adapter.in.web.customer.dto.*;
 import com.project.api.domain.customer.Customer;
 import com.project.api.domain.customer.CustomerAddress;
 import com.project.api.port.in.customer.*;
@@ -28,31 +27,31 @@ public class CustomerService implements
     private final CustomerRepository customerRepository;
 
     @Override
-    public Customer createCustomer(String name, String email, String phoneNumber, String password, String address, String addressDetail, String zipCode) {
+    public Customer createCustomer(CreateCustomerCommand command) {
         // 1. 이메일 중복 검증
-        if (customerRepository.existsByEmail(email)) {
-            throw new RuntimeException("이미 존재하는 이메일입니다: " + email);
+        if (customerRepository.existsByEmail(command.email())) {
+            throw new RuntimeException("이미 존재하는 이메일입니다: " + command.email());
         }
 
         // 2. 전화번호 중복 검증
-        if (customerRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new RuntimeException("이미 존재하는 전화번호입니다: " + phoneNumber);
+        if (customerRepository.existsByPhoneNumber(command.phoneNumber())) {
+            throw new RuntimeException("이미 존재하는 전화번호입니다: " + command.phoneNumber());
         }
 
         // 3. 고객 도메인 객체 생성
         Customer customer = Customer.builder()
-            .name(name)
-            .email(email)
-            .phoneNumber(phoneNumber)
-            .password(password) // TODO: 실제로는 암호화 필요
+            .name(command.name())
+            .email(command.email())
+            .phoneNumber(command.phoneNumber())
+            .password(command.password()) // TODO: 실제로는 암호화 필요
             .build();
 
         // 4. 첫 번째 주소가 있다면 추가
-        if (address != null && !address.isBlank()) {
+        if (command.address() != null && !command.address().isBlank()) {
             CustomerAddress firstAddress = CustomerAddress.builder()
-                .address(address)
-                .addressDetail(addressDetail)
-                .zipCode(zipCode)
+                .address(command.address())
+                .addressDetail(command.addressDetail())
+                .zipCode(command.zipCode())
                 .nickname("기본 주소")
                 .isDefault(true)
                 .build();
