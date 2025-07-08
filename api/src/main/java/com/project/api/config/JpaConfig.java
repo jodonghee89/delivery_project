@@ -14,6 +14,7 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
 import java.util.Map;
@@ -33,11 +34,11 @@ import java.util.Map;
 public class JpaConfig {
 
     /**
-     * 엔티티 매니저 팩토리 빈 생성 (Production 환경용)
+     * 엔티티 매니저 팩토리 빈 생성 (운영 환경용: local, dev, stage, prod)
      */
-    @Bean
+    @Bean("entityManagerFactory")
     @Primary
-    @ConditionalOnProperty(name = "spring.profiles.active", havingValue = "local")
+    @Profile("!test")  // test 프로파일이 아닌 모든 환경
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(
             DataSource routingDataSource,
             JpaProperties jpaProperties,
@@ -53,11 +54,11 @@ public class JpaConfig {
     }
 
     /**
-     * 엔티티 매니저 팩토리 빈 생성 (Test 환경용)
+     * 엔티티 매니저 팩토리 빈 생성 (테스트 환경용)
      */
-    @Bean
+    @Bean("entityManagerFactory")
     @Primary
-    @ConditionalOnProperty(name = "spring.profiles.active", havingValue = "test", matchIfMissing = true)
+    @Profile("test")  // test 프로파일에서만
     public LocalContainerEntityManagerFactoryBean entityManagerFactoryTest(
             DataSource dataSource,
             JpaProperties jpaProperties,
@@ -75,7 +76,7 @@ public class JpaConfig {
     /**
      * 트랜잭션 매니저 빈 생성
      */
-    @Bean
+    @Bean("transactionManager")
     @Primary
     public PlatformTransactionManager transactionManager(LocalContainerEntityManagerFactoryBean entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory.getObject());
