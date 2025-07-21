@@ -149,6 +149,7 @@ class CustomerControllerTest {
         Customer savedCustomer = customerRepository.save(customer);
 
         UpdateCustomerRequest request = new UpdateCustomerRequest(
+            1L,
                 "홍길동_수정",
                 "hongildong_new@example.com",
                 "010-9876-5432"
@@ -274,7 +275,7 @@ class CustomerControllerTest {
                 .address("서울특별시 강남구 테헤란로 123")
                 .addressDetail("456호")
                 .zipCode("12345")
-                .nickname("집")
+                .nickname("닉네임")
                 .isDefault(true)
                 .build();
 
@@ -283,11 +284,13 @@ class CustomerControllerTest {
         Long addressId = savedCustomer.getAddresses().get(0).getId();
 
         UpdateAddressRequest request = new UpdateAddressRequest(
+                1L,
+                1L,
                 "서울특별시 강남구 테헤란로 456",
-                "789호",
-                "54321",
-                "집_수정",
-                false
+            "456호",
+            "12345",
+            "닉네임",
+            true
         );
 
         // When & Then
@@ -298,10 +301,10 @@ class CustomerControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.address").value("서울특별시 강남구 테헤란로 456"))
-                .andExpect(jsonPath("$.addressDetail").value("789호"))
-                .andExpect(jsonPath("$.zipCode").value("54321"))
-                .andExpect(jsonPath("$.nickname").value("집_수정"))
-                .andExpect(jsonPath("$.isDefault").value(false));
+                .andExpect(jsonPath("$.addressDetail").value("456호"))
+                .andExpect(jsonPath("$.zipCode").value("12345"))
+                .andExpect(jsonPath("$.nickname").value("닉네임"))
+                .andExpect(jsonPath("$.isDefault").value(true));
     }
 
     @Test

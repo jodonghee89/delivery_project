@@ -70,27 +70,27 @@ public class CustomerService implements
     }
 
     @Override
-    public Customer updateCustomer(Long customerId, String name, String email, String phoneNumber) {
+    public Customer updateCustomer(UpdateCustomerCommand command) {
         // 1. 고객 조회
-        Customer customer = customerRepository.findById(customerId)
-            .orElseThrow(() -> new RuntimeException("고객을 찾을 수 없습니다: " + customerId));
+        Customer customer = customerRepository.findById(command.customerId())
+            .orElseThrow(() -> new RuntimeException("고객을 찾을 수 없습니다: " + command.customerId()));
 
         // 2. 이메일 중복 검증 (자신 제외)
-        if (email != null && !email.equals(customer.getEmail())) {
-            if (customerRepository.existsByEmail(email)) {
-                throw new RuntimeException("이미 존재하는 이메일입니다: " + email);
+        if (command.email() != null && !command.email().equals(customer.getEmail())) {
+            if (customerRepository.existsByEmail(command.email())) {
+                throw new RuntimeException("이미 존재하는 이메일입니다: " + command.email());
             }
         }
 
         // 3. 전화번호 중복 검증 (자신 제외)
-        if (phoneNumber != null && !phoneNumber.equals(customer.getPhoneNumber())) {
-            if (customerRepository.existsByPhoneNumber(phoneNumber)) {
-                throw new RuntimeException("이미 존재하는 전화번호입니다: " + phoneNumber);
+        if (command.phoneNumber() != null && !command.phoneNumber().equals(customer.getPhoneNumber())) {
+            if (customerRepository.existsByPhoneNumber(command.phoneNumber())) {
+                throw new RuntimeException("이미 존재하는 전화번호입니다: " + command.phoneNumber());
             }
         }
 
         // 4. 고객 정보 업데이트
-        customer.updateInfo(name, email, phoneNumber);
+        customer.updateInfo(command.name(), command.email(), command.phoneNumber());
 
         // 5. 저장 및 반환
         return customerRepository.save(customer);
@@ -163,32 +163,32 @@ public class CustomerService implements
     }
 
     @Override
-    public CustomerAddress updateCustomerAddress(Long customerId, Long addressId, String address, String addressDetail, String zipCode, String nickname, Boolean isDefault) {
+    public CustomerAddress updateCustomerAddress(UpdateCustomerAddressCommand request) {
         // 1. 고객 조회
-        Customer customer = customerRepository.findById(customerId)
-            .orElseThrow(() -> new RuntimeException("고객을 찾을 수 없습니다: " + customerId));
+        Customer customer = customerRepository.findById(request.customerId())
+            .orElseThrow(() -> new RuntimeException("고객을 찾을 수 없습니다: " + request.customerId()));
 
         // 2. 주소 조회
         CustomerAddress customerAddress = customer.getAddresses()
             .stream()
-            .filter(addr -> addr.getId().equals(addressId))
+            .filter(addr -> addr.getId().equals(request.addressId()))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다: " + addressId));
+            .orElseThrow(() -> new RuntimeException("주소를 찾을 수 없습니다: " + request.addressId()));
 
         // 3. 기본 주소 변경 처리
-        if (isDefault != null && isDefault) {
+        if (request.isDefault() != null && request.isDefault()) {
             customer.clearDefaultAddress();
         }
 
         // 4. 주소 정보 업데이트
-        customerAddress.updateAddress(address, addressDetail, zipCode, nickname, isDefault);
+        customerAddress.updateFromCommand(request);
 
         // 5. 저장 및 반환
         Customer savedCustomer = customerRepository.save(customer);
 
         return savedCustomer.getAddresses()
             .stream()
-            .filter(addr -> addr.getId().equals(addressId))
+            .filter(addr -> addr.getId().equals(request.addressId()))
             .findFirst()
             .orElseThrow(() -> new RuntimeException("주소 업데이트 실패"));
     }
@@ -217,4 +217,6 @@ public class CustomerService implements
         // 5. 저장
         customerRepository.save(customer);
     }
-} 
+
+
+}

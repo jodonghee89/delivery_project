@@ -38,19 +38,8 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<CustomerResponse> createCustomer(
             @Valid @RequestBody CreateCustomerRequest request) {
-        // DTO를 Command로 변환
-        CreateCustomerUseCase.CreateCustomerCommand command = 
-            new CreateCustomerUseCase.CreateCustomerCommand(
-                request.name(),
-                request.email(),
-                request.phoneNumber(),
-                request.password(),
-                request.address(),
-                request.addressDetail(),
-                request.zipCode()
-            );
-        
-        Customer customer = createCustomerUseCase.createCustomer(command);
+        // Request DTO가 Command 인터페이스를 구현하므로 직접 전달
+        Customer customer = createCustomerUseCase.createCustomer(request);
         CustomerResponse response = CustomerMapper.toResponse(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -92,12 +81,7 @@ public class CustomerController {
     public ResponseEntity<CustomerResponse> updateCustomer(
             @Parameter(description = "고객 ID") @PathVariable Long customerId,
             @Valid @RequestBody UpdateCustomerRequest request) {
-        Customer customer = updateCustomerUseCase.updateCustomer(
-            customerId,
-            request.name(),
-            request.email(),
-            request.phoneNumber()
-        );
+        Customer customer = updateCustomerUseCase.updateCustomer(request);
         CustomerResponse response = CustomerMapper.toResponse(customer);
         return ResponseEntity.ok(response);
     }
@@ -156,15 +140,7 @@ public class CustomerController {
             @Parameter(description = "고객 ID") @PathVariable Long customerId,
             @Parameter(description = "주소 ID") @PathVariable Long addressId,
             @Valid @RequestBody UpdateAddressRequest request) {
-        CustomerAddress address = manageCustomerAddressUseCase.updateCustomerAddress(
-            customerId,
-            addressId,
-            request.address(),
-            request.addressDetail(),
-            request.zipCode(),
-            request.nickname(),
-            request.isDefault()
-        );
+        CustomerAddress address = manageCustomerAddressUseCase.updateCustomerAddress(request);
         CustomerAddressResponse response = CustomerMapper.toAddressResponse(address);
         return ResponseEntity.ok(response);
     }

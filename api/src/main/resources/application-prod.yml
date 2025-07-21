@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: api-prod
+
+  datasource:
+    primary:
+      url: jdbc:mysql://prod-db-primary:3306/delivery?useSSL=true&serverTimezone=UTC&characterEncoding=UTF-8
+      username: prod_user
+      password: ${PROD_DB_PASSWORD}  # 환경 변수로 관리
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 10
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+    secondary:
+      url: jdbc:mysql://prod-db-secondary:3306/delivery?useSSL=true&serverTimezone=UTC&characterEncoding=UTF-8
+      username: prod_user
+      password: ${PROD_DB_PASSWORD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 30
+        minimum-idle: 15
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 운영 환경에서는 절대 스키마 변경 금지
+    show-sql: false      # 운영 환경에서는 SQL 출력 비활성화
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# SpringDoc 설정 (운영 환경에서는 비활성화)
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# Actuator 설정 (운영 환경에서는 제한적 노출)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never  # 운영 환경에서는 상세 정보 비공개
+    info:
+      enabled: true
+
+logging:
+  level:
+    root: ERROR
+    com.project: WARN
+    org.hibernate.SQL: ERROR
+  file:
+    name: /logs/api-prod.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30 

@@ -33,17 +33,19 @@ public interface ManageCustomerAddressUseCase {
     /**
      * 배달 주소를 수정합니다.
      * 
-     * @param customerId 고객 ID
-     * @param addressId 주소 ID
-     * @param address 수정할 주소 (null이면 수정하지 않음)
-     * @param addressDetail 수정할 상세 주소 (null이면 수정하지 않음)
-     * @param zipCode 수정할 우편번호 (null이면 수정하지 않음)
-     * @param nickname 수정할 주소 별칭 (null이면 수정하지 않음)
-     * @param isDefault 기본 주소 여부 (null이면 수정하지 않음)
-     * @return 수정된 주소 정보
+
      */
-    CustomerAddress updateCustomerAddress(Long customerId, Long addressId, String address, String addressDetail, String zipCode, String nickname, Boolean isDefault);
-    
+    CustomerAddress updateCustomerAddress(UpdateCustomerAddressCommand command);
+
+    interface UpdateCustomerAddressCommand{
+        Long customerId();
+        Long addressId();
+        String address();
+        String addressDetail();
+        String zipCode();
+        String nickname();
+        Boolean isDefault();
+    }
     /**
      * 배달 주소를 삭제합니다.
      * 

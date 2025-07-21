@@ -1,5 +1,6 @@
 package com.project.api.adapter.in.web.customer.dto;
 
+import com.project.api.port.in.customer.CreateCustomerUseCase;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * 고객 생성 요청 DTO
+ * CreateCustomerCommand 인터페이스를 구현하여 직접 UseCase에 전달 가능
  */
 public record CreateCustomerRequest(
     
@@ -30,4 +32,4 @@ public record CreateCustomerRequest(
     String address,
     String addressDetail,
     String zipCode
-) {} 
+) implements CreateCustomerUseCase.CreateCustomerCommand {} 

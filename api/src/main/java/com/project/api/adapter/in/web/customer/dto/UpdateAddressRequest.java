@@ -1,12 +1,17 @@
 package com.project.api.adapter.in.web.customer.dto;
 
+import com.project.api.port.in.customer.ManageCustomerAddressUseCase;
 import jakarta.validation.constraints.Size;
 
 /**
  * 주소 수정 요청 DTO
  */
 public record UpdateAddressRequest(
-    
+
+    Long customerId,
+
+    Long addressId,
+
     @Size(max = 255, message = "주소는 255자 이하로 입력해주세요")
     String address,
     
@@ -20,4 +25,5 @@ public record UpdateAddressRequest(
     String nickname,
     
     Boolean isDefault
-) {} 
+) implements ManageCustomerAddressUseCase.UpdateCustomerAddressCommand {}
+

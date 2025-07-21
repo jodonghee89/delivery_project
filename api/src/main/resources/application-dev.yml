@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: api-dev
+
+  datasource:
+    primary:
+      url: jdbc:mysql://dev-db-primary:3306/delivery?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+      username: dev_user
+      password: dev_password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+    secondary:
+      url: jdbc:mysql://dev-db-secondary:3306/delivery?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+      username: dev_user
+      password: dev_password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 15
+        minimum-idle: 5
+        connection-timeout: 30000
+        idle-timeout: 600000
+        max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 개발 환경에서는 스키마 검증만
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+# SpringDoc 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+  packages-to-scan: com.project.api
+  paths-to-match: /delivery/**
+
+logging:
+  level:
+    root: INFO
+    com.project: DEBUG
+    org.hibernate.SQL: DEBUG 

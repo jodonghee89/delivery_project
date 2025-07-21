@@ -1,5 +1,6 @@
 package com.project.api.domain.customer;
 
+import com.project.api.port.in.customer.ManageCustomerAddressUseCase;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -74,24 +75,68 @@ public class CustomerAddress {
     // == 비즈니스 로직 == //
     
     /**
-     * 주소 정보 수정
+     * 주소 정보 수정 (CustomerAddress 타입)
      */
-    public void updateAddress(String newAddress, String newAddressDetail, String newZipCode, String newNickname, Boolean newIsDefault) {
-        if (newAddress != null) {
-            validateAddress(newAddress);
-            this.address = newAddress;
+    public void updateAddress(CustomerAddress request) {
+        if (request.getAddress() != null) {
+            validateAddress(request.getAddress());
+            this.address = request.getAddress();
         }
-        if (newAddressDetail != null) {
-            this.addressDetail = newAddressDetail;
+        if (request.getAddressDetail() != null) {
+            this.addressDetail = request.getAddressDetail();
         }
-        if (newZipCode != null) {
-            this.zipCode = newZipCode;
+        if (request.getZipCode() != null) {
+            this.zipCode = request.getZipCode();
         }
-        if (newNickname != null) {
-            this.nickname = newNickname;
+        if (request.getNickname() != null) {
+            this.nickname = request.getNickname();
         }
-        if (newIsDefault != null) {
-            this.isDefault = newIsDefault;
+        if (request.isDefault()) {
+            this.isDefault = request.isDefault();
+        }
+    }
+
+    /**
+     * 주소 정보 수정 (개별 필드 업데이트)
+     */
+    public void updateAddressInfo(String address, String addressDetail, String zipCode, String nickname, Boolean isDefault) {
+        if (address != null) {
+            validateAddress(address);
+            this.address = address;
+        }
+        if (addressDetail != null) {
+            this.addressDetail = addressDetail;
+        }
+        if (zipCode != null) {
+            this.zipCode = zipCode;
+        }
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+        if (isDefault != null) {
+            this.isDefault = isDefault;
+        }
+    }
+
+    /**
+     * 주소 정보 수정 (Command 인터페이스 사용)
+     */
+    public void updateFromCommand(ManageCustomerAddressUseCase.UpdateCustomerAddressCommand command) {
+        if (command.address() != null) {
+            validateAddress(command.address());
+            this.address = command.address();
+        }
+        if (command.addressDetail() != null) {
+            this.addressDetail = command.addressDetail();
+        }
+        if (command.zipCode() != null) {
+            this.zipCode = command.zipCode();
+        }
+        if (command.nickname() != null) {
+            this.nickname = command.nickname();
+        }
+        if (command.isDefault() != null) {
+            this.isDefault = command.isDefault();
         }
     }
 

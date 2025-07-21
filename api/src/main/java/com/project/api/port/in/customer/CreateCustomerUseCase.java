@@ -17,15 +17,16 @@ public interface CreateCustomerUseCase {
     Customer createCustomer(CreateCustomerCommand command);
     
     /**
-     * 고객 생성 명령 클래스
+     * 고객 생성 명령 인터페이스
+     * Controller의 Request DTO가 이 인터페이스를 구현하여 직접 전달
      */
-    record CreateCustomerCommand(
-        String name,
-        String email,
-        String phoneNumber,
-        String password,
-        String address,
-        String addressDetail,
-        String zipCode
-    ) {}
+    interface CreateCustomerCommand {
+        String name();
+        String email();
+        String phoneNumber();
+        String password();
+        String address();
+        String addressDetail();
+        String zipCode();
+    }
 } 
