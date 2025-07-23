@@ -202,47 +202,12 @@ public class Order {
         return status == OrderStatus.PENDING || status == OrderStatus.CONFIRMED;
     }
 
-    /**
-     * 상태 변경 가능 여부 확인
-     */
-    public boolean canChangeStatusTo(OrderStatus newStatus) {
-        return isValidStatusTransition(this.status, newStatus);
-    }
 
     /**
-     * 주문 상태 업데이트
-     */
-    public void updateStatus(OrderStatus newStatus, String reason) {
-        validateStatusTransition(newStatus);
-        changeStatus(newStatus);
-    }
-
-    /**
-     * 특별 요청사항 업데이트
-     */
-    public void updateSpecialRequests(String specialRequests) {
-        this.memo = specialRequests;
-    }
-
-    /**
-     * ID 반환 (Service에서 사용)
+     * 주문 ID 반환
      */
     public Long getId() {
         return this.orderId;
-    }
-
-    /**
-     * 고객 ID 반환
-     */
-    public Long getCustomerId() {
-        return this.customerId;
-    }
-
-    /**
-     * 매장 ID 반환
-     */
-    public Long getStoreId() {
-        return this.storeId;
     }
 
     /**
@@ -253,24 +218,39 @@ public class Order {
     }
 
     /**
-     * 주문 상태 반환
+     * 주문 상태 업데이트 (서비스에서 사용)
      */
-    public OrderStatus getOrderStatus() {
-        return this.status;
+    public void updateStatus(OrderStatus newStatus, String reason) {
+        validateStatusTransition(newStatus);
+        changeStatus(newStatus);
     }
 
     /**
-     * 총 금액 반환 (Integer 타입)
+     * 주문 상태 변경 가능 여부 확인
+     */
+    public boolean canChangeStatusTo(OrderStatus targetStatus) {
+        return isValidStatusTransition(this.status, targetStatus);
+    }
+
+    /**
+     * 총 금액 반환 (서비스에서 사용)
      */
     public Integer getTotalAmount() {
         return this.totalPrice != null ? this.totalPrice.intValue() : 0;
     }
 
     /**
-     * 결제 방법 반환 (String 타입)
+     * 결제 방법 문자열 반환 (서비스에서 사용)
      */
     public String getPaymentMethod() {
         return this.paymentMethod != null ? this.paymentMethod.name() : null;
+    }
+
+    /**
+     * 주문 상태 반환 (서비스에서 사용)
+     */
+    public OrderStatus getOrderStatus() {
+        return this.status;
     }
 
     /**
@@ -292,6 +272,13 @@ public class Order {
      */
     public String getSpecialRequests() {
         return this.memo;
+    }
+
+    /**
+     * 특별 요청사항 업데이트
+     */
+    public void updateSpecialRequests(String specialRequests) {
+        this.memo = specialRequests;
     }
 
     /**

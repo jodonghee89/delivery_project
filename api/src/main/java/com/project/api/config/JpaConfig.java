@@ -1,27 +1,29 @@
 package com.project.api.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.project.core.config.DataSourceConfig;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * JPA 설정 클래스
- * 엔티티 매니저와 트랜잭션 매니저를 설정합니다.
+ * JPA 설정
+ * 
+ * 헥사고날 아키텍처에 맞는 JPA 및 트랜잭션 설정
  */
 @Configuration
 @EnableJpaRepositories(
@@ -83,19 +85,38 @@ public class JpaConfig {
     }
 
     /**
-     * EntityManagerFactoryBuilder 생성
+     * EntityManagerFactoryBuilder 생성 헬퍼 메서드
      */
     private EntityManagerFactoryBuilder createEntityManagerFactoryBuilder(
-            JpaProperties jpaProperties, HibernateProperties hibernateProperties) {
+            JpaProperties jpaProperties, 
+            HibernateProperties hibernateProperties) {
         
-        Map<String, Object> properties = hibernateProperties.determineHibernateProperties(
-                jpaProperties.getProperties(), new HibernateSettings()
-        );
-        
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setGenerateDdl(jpaProperties.isGenerateDdl());
+        vendorAdapter.setShowSql(jpaProperties.isShowSql());
+
         return new EntityManagerFactoryBuilder(
-                new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter(),
-                properties,
+                vendorAdapter,
+                getJpaPropertyMap(jpaProperties, hibernateProperties),
                 null
         );
+    }
+
+    /**
+     * JPA 속성 맵 생성
+     */
+    private Map<String, Object> getJpaPropertyMap(JpaProperties jpaProperties, HibernateProperties hibernateProperties) {
+        Map<String, Object> propertyMap = new HashMap<>();
+        
+        // JPA 기본 설정
+        propertyMap.putAll(jpaProperties.getProperties());
+        
+        // Hibernate 설정 추가
+        propertyMap.putAll(hibernateProperties.determineHibernateProperties(
+                jpaProperties.getProperties(), 
+                new org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings()
+        ));
+        
+        return propertyMap;
     }
 } 

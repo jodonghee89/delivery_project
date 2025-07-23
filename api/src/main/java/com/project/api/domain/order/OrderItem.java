@@ -44,6 +44,9 @@ public class OrderItem {
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal unitPrice;
 
+    @Column(name = "special_requests")
+    private String specialRequests;
+
     @Builder
     private OrderItem(Order order, Menu menu, MenuOption menuOption, Integer quantity, BigDecimal unitPrice,
                       Long menuId, Integer price, String specialRequests) {
@@ -59,6 +62,7 @@ public class OrderItem {
             this.menuOption = menuOption;
             this.quantity = quantity;
             this.unitPrice = unitPrice;
+            this.specialRequests = specialRequests;
         }
         // 새로운 방식 (ID 기반 생성 - Service에서 사용)
         else if (menuId != null) {
@@ -70,7 +74,7 @@ public class OrderItem {
             this.menu = Menu.builder().menuId(menuId).build();
             this.quantity = quantity;
             this.unitPrice = price != null ? BigDecimal.valueOf(price) : BigDecimal.ZERO;
-            // specialRequests는 별도 필드가 필요하지만 일단 생략
+            this.specialRequests = specialRequests;
         }
     }
 
@@ -96,10 +100,10 @@ public class OrderItem {
     }
 
     /**
-     * 특별 요청사항 반환 (임시로 null 반환)
+     * 특별 요청사항 반환
      */
     public String getSpecialRequests() {
-        return null; // TODO: specialRequests 필드 추가 필요
+        return this.specialRequests;
     }
 
     // == 비즈니스 로직 == //
