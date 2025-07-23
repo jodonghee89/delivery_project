@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 관리 - 배달 서비스</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .order-list-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .filters-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+        }
+        .order-table th,
+        .order-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .order-table th {
+            background: var(--color-surface-secondary);
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        .order-table tr:hover {
+            background: var(--color-surface-secondary);
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+            min-width: 80px;
+            display: inline-block;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-confirmed { background: #dbeafe; color: #1e40af; }
+        .status-preparing { background: #fce7f3; color: #be185d; }
+        .status-delivering { background: #e0e7ff; color: #3730a3; }
+        .status-delivered { background: #dcfce7; color: #15803d; }
+        .status-cancelled { background: #fee2e2; color: #dc2626; }
+        
+        .order-amount {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+        }
+        .quick-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .quick-filter {
+            padding: 6px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .quick-filter.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        .quick-filter:hover {
+            background: var(--color-surface-secondary);
+        }
+        .quick-filter.active:hover {
+            background: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="order-list-container">
+        <header class="page-header">
+            <h1>📦 주문 관리</h1>
+            <p>주문 정보를 조회하고 상태를 관리할 수 있습니다.</p>
+        </header>
+
+        <!-- 📊 주문 통계 -->
+        <div class="stats-grid" style="margin-bottom: 24px;">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${totalOrders}">0</div>
+                <div class="stat-label">전체 주문</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayOrders">0</div>
+                <div class="stat-label">오늘 주문</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeOrders">0</div>
+                <div class="stat-label">진행중 주문</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalRevenue">₩0</div>
+                <div class="stat-label">총 매출</div>
+            </div>
+        </div>
+
+        <!-- 🔍 빠른 필터 -->
+        <div class="quick-filters">
+            <div class="quick-filter active" data-status="">전체</div>
+            <div class="quick-filter" data-status="PENDING">주문 접수</div>
+            <div class="quick-filter" data-status="CONFIRMED">주문 확인</div>
+            <div class="quick-filter" data-status="PREPARING">조리중</div>
+            <div class="quick-filter" data-status="DELIVERING">배달중</div>
+            <div class="quick-filter" data-status="DELIVERED">배달 완료</div>
+            <div class="quick-filter" data-status="CANCELLED">취소</div>
+        </div>
+
+        <!-- 🔍 검색 및 필터 -->
+        <div class="filters-bar">
+            <input type="text" 
+                   id="searchInput" 
+                   placeholder="주문 ID, 고객명, 매장명으로 검색..." 
+                   class="form-input" 
+                   style="flex: 1; min-width: 300px;">
+            
+            <select id="statusFilter" class="form-select">
+                <option value="">전체 상태</option>
+                <option value="PENDING">주문 접수</option>
+                <option value="CONFIRMED">주문 확인</option>
+                <option value="PREPARING">조리중</option>
+                <option value="DELIVERING">배달중</option>
+                <option value="DELIVERED">배달 완료</option>
+                <option value="CANCELLED">취소</option>
+            </select>
+
+            <input type="date" id="dateFilter" class="form-input">
+            
+            <button type="button" class="btn btn-primary" onclick="addOrder()">
+                ➕ 주문 추가
+            </button>
+        </div>
+
+        <!-- 📋 주문 테이블 -->
+        <div class="card">
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>주문 ID</th>
+                        <th>고객 정보</th>
+                        <th>매장명</th>
+                        <th>주문 금액</th>
+                        <th>주문 상태</th>
+                        <th>주문 시간</th>
+                        <th>배달 주소</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody">
+                    <!-- 데이터가 없을 때 -->
+                    <tr th:if="${orders.empty}">
+                        <td colspan="8" style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
+                            📭 등록된 주문이 없습니다.
+                        </td>
+                    </tr>
+                    
+                    <!-- 주문 데이터 -->
+                    <tr th:each="order : ${orders}">
+                        <td>
+                            <strong th:text="'#' + ${order.orderId}">#12345</strong>
+                        </td>
+                        <td>
+                            <div class="customer-info">
+                                <div class="avatar">
+                                    <span>고</span>
+                                </div>
+                                <div>
+                                    <div th:text="${order.customerId}">고객 ID</div>
+                                    <div style="font-size: 0.75rem; color: var(--color-text-secondary);">
+                                        ID: <span th:text="${order.customerId}">123</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td th:text="${order.storeName ?: '매장명 없음'}">치킨마루</td>
+                        <td>
+                            <div class="order-amount" th:text="'₩' + ${#numbers.formatInteger(order.totalAmount ?: 0, 3, 'COMMA')}">₩25,000</div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-pending" 
+                                  th:classappend="'status-' + ${#strings.toLowerCase(order.orderStatus ?: 'pending')}"
+                                  th:text="${order.orderStatus ?: 'PENDING'}">
+                                주문 접수
+                            </span>
+                        </td>
+                        <td>
+                            <div th:text="${#temporals.format(order.orderDate, 'MM-dd HH:mm')}">01-21 14:30</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-secondary);" 
+                                 th:text="${#temporals.format(order.orderDate, 'yyyy년')}">2025년</div>
+                        </td>
+                        <td>
+                            <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
+                                 th:text="${order.deliveryAddress ?: '주소 없음'}" 
+                                 th:title="${order.deliveryAddress}">
+                                서울시 강남구 테헤란로 123
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" 
+                                        class="btn btn-sm btn-secondary" 
+                                        th:onclick="'viewOrder(' + ${order.orderId} + ')'">
+                                    👁️ 상세
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-sm btn-secondary" 
+                                        th:onclick="'updateOrderStatus(' + ${order.orderId} + ')'">
+                                    🔄 상태변경
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger" 
+                                        th:onclick="'cancelOrder(' + ${order.orderId} + ')'">
+                                    ❌ 취소
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 📄 페이지네이션 -->
+        <div class="pagination" style="margin-top: 24px; text-align: center;">
+            <button type="button" class="btn btn-secondary">← 이전</button>
+            <span style="margin: 0 16px; color: var(--color-text-secondary);">1 / 1 페이지</span>
+            <button type="button" class="btn btn-secondary">다음 →</button>
+        </div>
+    </div>
+
+    <!-- 🔄 상태 변경 모달 -->
+    <div id="statusModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 24px; border-radius: 12px; min-width: 400px;">
+            <h3 style="margin: 0 0 20px 0;">주문 상태 변경</h3>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">새로운 상태</label>
+                <select id="newStatus" class="form-select">
+                    <option value="PENDING">주문 접수</option>
+                    <option value="CONFIRMED">주문 확인</option>
+                    <option value="PREPARING">조리중</option>
+                    <option value="DELIVERING">배달중</option>
+                    <option value="DELIVERED">배달 완료</option>
+                    <option value="CANCELLED">취소</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">변경 사유</label>
+                <textarea id="updateReason" class="form-textarea" placeholder="상태 변경 사유를 입력하세요 (선택사항)"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="closeStatusModal()">취소</button>
+                <button type="button" class="btn btn-primary" onclick="confirmStatusUpdate()">변경</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 JavaScript -->
+    <script>
+        // API 기본 URL
+        const API_BASE_URL = 'http://localhost:8080/delivery';
+        let currentOrderId = null;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
+            initEventListeners();
+            updateStats();
+        });
+
+        // 이벤트 리스너 초기화
+        function initEventListeners() {
+            // 검색 및 필터 이벤트
+            document.getElementById('searchInput').addEventListener('input', filterOrders);
+            document.getElementById('statusFilter').addEventListener('change', filterOrders);
+            document.getElementById('dateFilter').addEventListener('change', filterOrders);
+
+            // 빠른 필터 이벤트
+            document.querySelectorAll('.quick-filter').forEach(filter => {
+                filter.addEventListener('click', function() {
+                    document.querySelectorAll('.quick-filter').forEach(f => f.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const status = this.dataset.status;
+                    document.getElementById('statusFilter').value = status;
+                    filterOrders();
+                });
+            });
+        }
+
+        // 주문 목록 로드
+        async function loadOrders() {
+            try {
+                // 실제 환경에서는 API 호출
+                // const response = await fetch(`${API_BASE_URL}/orders`);
+                // const orders = await response.json();
+                
+                console.log('주문 목록 로드 중...');
+                
+            } catch (error) {
+                console.error('주문 목록 로드 실패:', error);
+                showAlert('주문 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('todayOrders').textContent = '0';
+            document.getElementById('activeOrders').textContent = '0';
+            document.getElementById('totalRevenue').textContent = '₩0';
+        }
+
+        // 검색 및 필터링
+        function filterOrders() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            console.log('필터링:', { searchTerm, statusFilter, dateFilter });
+            // 실제 필터링 로직 구현
+        }
+
+        // 주문 추가
+        function addOrder() {
+            window.location.href = '/orders/new';
+        }
+
+        // 주문 상세보기
+        function viewOrder(orderId) {
+            window.location.href = `/orders/${orderId}`;
+        }
+
+        // 주문 상태 변경 모달 열기
+        function updateOrderStatus(orderId) {
+            currentOrderId = orderId;
+            document.getElementById('statusModal').style.display = 'block';
+        }
+
+        // 상태 변경 모달 닫기
+        function closeStatusModal() {
+            currentOrderId = null;
+            document.getElementById('statusModal').style.display = 'none';
+            document.getElementById('newStatus').value = '';
+            document.getElementById('updateReason').value = '';
+        }
+
+        // 상태 변경 확인
+        async function confirmStatusUpdate() {
+            const newStatus = document.getElementById('newStatus').value;
+            const updateReason = document.getElementById('updateReason').value;
+
+            if (!newStatus) {
+                showAlert('새로운 상태를 선택해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const requestData = {
+                    orderStatus: newStatus,
+                    updateReason: updateReason || null
+                };
+
+                console.log('주문 상태 변경:', currentOrderId, requestData);
+
+                // API 호출 (실제 환경에서)
+                /*
+                const response = await fetch(`${API_BASE_URL}/orders/${currentOrderId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('상태 변경에 실패했습니다.');
+                }
+                */
+
+                showAlert('주문 상태가 성공적으로 변경되었습니다.', 'success');
+                closeStatusModal();
+                loadOrders(); // 목록 새로고침
+
+            } catch (error) {
+                console.error('상태 변경 실패:', error);
+                showAlert('상태 변경에 실패했습니다.', 'error');
+            }
+        }
+
+        // 주문 취소
+        async function cancelOrder(orderId) {
+            const reason = prompt('취소 사유를 입력해주세요:');
+            if (!reason) return;
+
+            if (!confirm(`정말로 주문 #${orderId}를 취소하시겠습니까?`)) {
+                return;
+            }
+
+            try {
+                console.log('주문 취소:', orderId, reason);
+
+                // API 호출 (실제 환경에서)
+                /*
+                const response = await fetch(`${API_BASE_URL}/orders/${orderId}?cancelReason=${encodeURIComponent(reason)}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('주문 취소에 실패했습니다.');
+                }
+                */
+
+                showAlert('주문이 성공적으로 취소되었습니다.', 'success');
+                loadOrders(); // 목록 새로고침
+
+            } catch (error) {
+                console.error('주문 취소 실패:', error);
+                showAlert('주문 취소에 실패했습니다.', 'error');
+            }
+        }
+
+        // 알림 표시
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1001;
+                min-width: 300px;
+                background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#3b82f6'};
+            `;
+            alertDiv.textContent = message;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

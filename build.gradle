@@ -1,54 +1,56 @@
 plugins {
-    id 'org.springframework.boot' version '3.3.2'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0' apply false
+    id 'io.spring.dependency-management' version '1.1.4' apply false
 }
 
-ext {
-    set('springCloudVersion', "2024.0.1")
+allprojects {
+    group = 'com.project'
+    version = '1.0.0'
+    
+    repositories {
+        mavenCentral()
+    }
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'io.spring.dependency-management'
-
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
-
-    group = 'com.project'
-    version = '1.0.0-SNAPSHOT'
-
-    repositories {
-        mavenCentral()
+    
+    java {
+        sourceCompatibility = '17'
+        targetCompatibility = '17'
     }
-
-    dependencies {
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
-
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    }
-
-    dependencyManagement {
-        imports {
-            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
         }
     }
-
+    
+    dependencies {
+        // 공통 의존성
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        
+        // 테스트 의존성
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+    
+    dependencyManagement {
+        imports {
+            mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+        }
+    }
+    
     tasks.named('test') {
         useJUnitPlatform()
     }
 }
 
-// 라이브러리 모듈들에 대한 공통 설정
-configure(subprojects.findAll { it.name != 'api' }) {
-    apply plugin: 'org.springframework.boot'
-
-    bootJar {
-        enabled = false
-    }
-
-    jar {
-        enabled = true
-    }
+// 루트 프로젝트는 실행 가능한 JAR을 생성하지 않음
+jar {
+    enabled = false
 }

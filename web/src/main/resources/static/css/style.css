@@ -1,0 +1,670 @@
+/* 🎨 배달 서비스 관리 시스템 - Modern Minimal Design */
+
+/* ========================================
+   CSS 변수 (컬러 팔레트)
+======================================== */
+:root {
+  /* 메인 컬러 (흑백 기반) */
+  --color-background: #ffffff;
+  --color-foreground: #09090b;
+  --color-card: #ffffff;
+  --color-card-foreground: #09090b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #09090b;
+  
+  /* 보더 & 인풋 */
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+  --color-ring: #18181b;
+  
+  /* 뮤티드 컬러 */
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #71717a;
+  
+  /* 포인트 컬러 (파랑) */
+  --color-primary: #18181b;
+  --color-primary-foreground: #fafafa;
+  
+  /* 보조 컬러 */
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: #18181b;
+  
+  /* 액센트 컬러 */
+  --color-accent: #f4f4f5;
+  --color-accent-foreground: #18181b;
+  
+  /* 상태 컬러 */
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+  
+  /* 반경 */
+  --radius: 0.5rem;
+  
+  /* 그림자 */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* 다크 모드 (향후 지원) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #09090b;
+    --color-foreground: #fafafa;
+    --color-card: #09090b;
+    --color-card-foreground: #fafafa;
+    --color-popover: #09090b;
+    --color-popover-foreground: #fafafa;
+    --color-primary: #fafafa;
+    --color-primary-foreground: #18181b;
+    --color-secondary: #27272a;
+    --color-secondary-foreground: #fafafa;
+    --color-muted: #27272a;
+    --color-muted-foreground: #a1a1aa;
+    --color-accent: #27272a;
+    --color-accent-foreground: #fafafa;
+    --color-border: #27272a;
+    --color-input: #27272a;
+    --color-ring: #d4d4d8;
+  }
+}
+
+/* ========================================
+   기본 스타일
+======================================== */
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================
+   레이아웃 컴포넌트
+======================================== */
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* ========================================
+   네비게이션
+======================================== */
+
+.navbar {
+  background-color: var(--color-background) !important;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  padding: 0.75rem 0;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: var(--color-foreground) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navbar-brand i {
+  color: var(--color-info);
+}
+
+.nav-link {
+  font-weight: 500;
+  color: var(--color-muted-foreground) !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-link:hover {
+  color: var(--color-foreground) !important;
+  background-color: var(--color-muted);
+}
+
+.nav-link.active {
+  color: var(--color-foreground) !important;
+  background-color: var(--color-muted);
+  font-weight: 600;
+}
+
+/* ========================================
+   카드 컴포넌트
+======================================== */
+
+.card {
+  background-color: var(--color-card);
+  color: var(--color-card-foreground);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--color-border);
+  padding: 1.5rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* 통계 카드 */
+.stats-card {
+  padding: 1.5rem;
+  border-radius: calc(var(--radius) + 2px);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-card);
+  transition: all 0.2s ease;
+}
+
+.stats-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.stats-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats-card-info h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-foreground);
+}
+
+.stats-card-info p {
+  font-size: 0.875rem;
+  color: var(--color-muted-foreground);
+  margin: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stats-card-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.stats-card-icon.primary {
+  background-color: var(--color-info);
+  color: white;
+}
+
+.stats-card-icon.success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.stats-card-icon.warning {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.stats-card-icon.info {
+  background-color: var(--color-info);
+  color: white;
+}
+
+/* ========================================
+   버튼 컴포넌트
+======================================== */
+
+.btn {
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, black);
+  border-color: color-mix(in srgb, var(--color-primary) 90%, black);
+  color: var(--color-primary-foreground);
+}
+
+/* Secondary Button */
+.btn-secondary,
+.btn-outline-primary {
+  background-color: transparent;
+  color: var(--color-foreground);
+  border-color: var(--color-border);
+}
+
+.btn-secondary:hover,
+.btn-outline-primary:hover {
+  background-color: var(--color-muted);
+  color: var(--color-foreground);
+  border-color: var(--color-border);
+}
+
+/* Success Button */
+.btn-success,
+.btn-outline-success {
+  background-color: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+.btn-outline-success {
+  background-color: transparent;
+  color: var(--color-success);
+}
+
+.btn-outline-success:hover {
+  background-color: var(--color-success);
+  color: white;
+}
+
+/* Danger Button */
+.btn-danger {
+  background-color: var(--color-destructive);
+  color: white;
+  border-color: var(--color-destructive);
+}
+
+.btn-danger:hover {
+  background-color: color-mix(in srgb, var(--color-destructive) 90%, black);
+  color: white;
+}
+
+/* Small Button */
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+/* ========================================
+   테이블 컴포넌트
+======================================== */
+
+.table-container {
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) + 2px);
+  overflow: hidden;
+  background-color: var(--color-card);
+}
+
+.table {
+  margin: 0;
+  width: 100%;
+}
+
+.table th {
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table td {
+  padding: 1rem;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-foreground);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background-color: var(--color-muted);
+}
+
+/* ========================================
+   폼 컴포넌트
+======================================== */
+
+.form-control {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-ring);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-ring) 20%, transparent);
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--color-foreground);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   배지 컴포넌트
+======================================== */
+
+.badge {
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.badge.bg-secondary {
+  background-color: var(--color-secondary) !important;
+  color: var(--color-secondary-foreground);
+}
+
+.badge.bg-info {
+  background-color: var(--color-info) !important;
+  color: white;
+}
+
+.badge.bg-success {
+  background-color: var(--color-success) !important;
+  color: white;
+}
+
+.badge.bg-warning {
+  background-color: var(--color-warning) !important;
+  color: white;
+}
+
+/* ========================================
+   알림 컴포넌트
+======================================== */
+
+.alert {
+  border-radius: var(--radius);
+  border: 1px solid;
+  padding: 1rem;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: color-mix(in srgb, var(--color-success) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
+  color: color-mix(in srgb, var(--color-success) 80%, black);
+}
+
+.alert-danger {
+  background-color: color-mix(in srgb, var(--color-destructive) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-destructive) 30%, transparent);
+  color: color-mix(in srgb, var(--color-destructive) 80%, black);
+}
+
+/* ========================================
+   모달 컴포넌트
+======================================== */
+
+.modal-content {
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-lg);
+  background-color: var(--color-card);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 1.5rem;
+  background-color: var(--color-muted);
+}
+
+/* ========================================
+   유틸리티 클래스
+======================================== */
+
+.text-muted {
+  color: var(--color-muted-foreground) !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* ========================================
+   반응형 디자인
+======================================== */
+
+@media (max-width: 768px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .stats-card {
+    padding: 1rem;
+  }
+  
+  .stats-card-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .stats-card-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .table-container {
+    border-radius: var(--radius);
+  }
+}
+
+/* ========================================
+   애니메이션
+======================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ========================================
+   커스텀 컴포넌트
+======================================== */
+
+/* 페이지 헤더 */
+.page-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.page-header h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-header p {
+  color: var(--color-muted-foreground);
+  margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+}
+
+/* 검색 컨테이너 */
+.search-container {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) + 2px);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 빈 상태 */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-muted-foreground);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h5 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-foreground);
+}
+
+/* 아바타 */
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.avatar-sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.75rem;
+} 

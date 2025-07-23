@@ -6,17 +6,22 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'com.mysql:mysql-connector-j:8.0.33'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    
+    // 다른 모듈 의존성
     implementation project(':core')
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'com.h2database:h2'
+    runtimeOnly 'com.h2database:h2'  // 런타임에 H2 사용 가능
 }
 
+// API 서버 실행 가능한 JAR
 bootJar {
     mainClass.set("com.project.api.ApiApplication")
     enabled = true
 }
 
+// 다른 모듈에서 사용할 수 있는 일반 JAR (plain JAR)
 jar {
     enabled = true
+    archiveClassifier = 'plain'  // bootJar와 구분하기 위해 classifier 추가
 }

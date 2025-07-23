@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>배달 서비스 관리 - 대시보드</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* 추가 스타일링 */
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .simple-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+        .simple-card {
+            background: var(--color-surface);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-subtle);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .simple-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+        .simple-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+        .simple-label {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .action-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            text-decoration: none;
+            color: var(--color-text);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+            text-decoration: none;
+            color: var(--color-primary);
+        }
+        .action-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .action-desc {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+        .recent-activity {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 32px;
+        }
+        .activity-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+        .activity-header {
+            padding: 16px 20px;
+            background: var(--color-surface-secondary);
+            font-weight: 600;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        .activity-content {
+            padding: 16px 20px;
+        }
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .no-data {
+            text-align: center;
+            color: var(--color-text-secondary);
+            padding: 20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #10b981; }
+        .status-warning { background: #f59e0b; }
+        .status-error { background: #ef4444; }
+
+        @media (max-width: 768px) {
+            .recent-activity {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="page-header">
+            <h1>📊 배달 서비스 대시보드</h1>
+            <p>시스템 현황과 주요 지표를 확인하세요</p>
+        </header>
+
+        <!-- 📈 주요 통계 -->
+        <section class="simple-stats">
+            <div class="simple-card">
+                <div class="simple-number" th:text="${totalCustomers}">0</div>
+                <div class="simple-label">전체 고객 수</div>
+            </div>
+            <div class="simple-card">
+                <div class="simple-number" th:text="${totalOrders}">0</div>
+                <div class="simple-label">전체 주문 수</div>
+            </div>
+            <div class="simple-card">
+                <div class="simple-number">8081</div>
+                <div class="simple-label">웹 서버 포트</div>
+            </div>
+            <div class="simple-card">
+                <div class="simple-number">
+                    <span class="status-indicator status-online"></span>
+                    온라인
+                </div>
+                <div class="simple-label">서버 상태</div>
+            </div>
+        </section>
+
+        <!-- 🚀 빠른 액세스 -->
+        <section>
+            <h2 style="margin-bottom: 16px;">🚀 빠른 액세스</h2>
+            <div class="quick-actions">
+                <a href="/customers" class="action-card">
+                    <div class="action-icon">👥</div>
+                    <div class="action-title">고객 관리</div>
+                    <div class="action-desc">고객 정보 조회 및 관리</div>
+                </a>
+                
+                <a href="/orders" class="action-card">
+                    <div class="action-icon">📦</div>
+                    <div class="action-title">주문 관리</div>
+                    <div class="action-desc">주문 현황 및 상태 관리</div>
+                </a>
+                
+                <a href="/customers/new" class="action-card">
+                    <div class="action-icon">➕</div>
+                    <div class="action-title">고객 등록</div>
+                    <div class="action-desc">새로운 고객 정보 등록</div>
+                </a>
+                
+                <a href="/orders/new" class="action-card">
+                    <div class="action-icon">🛒</div>
+                    <div class="action-title">주문 생성</div>
+                    <div class="action-desc">새로운 주문 등록</div>
+                </a>
+                
+                <a href="/test" class="action-card">
+                    <div class="action-icon">🧪</div>
+                    <div class="action-title">테스트 페이지</div>
+                    <div class="action-desc">시스템 동작 확인</div>
+                </a>
+                
+                <a href="/api-test" class="action-card">
+                    <div class="action-icon">🔗</div>
+                    <div class="action-title">API 테스트</div>
+                    <div class="action-desc">REST API 연동 테스트</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- 📊 최근 활동 -->
+        <section class="recent-activity">
+            <div class="activity-card">
+                <div class="activity-header">
+                    <span>👥 최근 등록 고객</span>
+                    <a href="/customers" style="color: var(--color-primary); text-decoration: none; font-size: 0.875rem;">전체보기 →</a>
+                </div>
+                <div class="activity-content">
+                    <div th:if="${recentCustomers.empty}" class="no-data">
+                        등록된 고객이 없습니다.
+                    </div>
+                    
+                    <div th:each="customer : ${recentCustomers}" class="activity-item">
+                        <div>
+                            <div style="font-weight: 500;" th:text="${customer.name}">고객명</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-secondary);" 
+                                 th:text="${customer.email}">이메일</div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-secondary);" 
+                             th:text="${#temporals.format(customer.createdAt, 'MM-dd')}">01-21</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity-card">
+                <div class="activity-header">
+                    <span>📦 최근 주문</span>
+                    <a href="/orders" style="color: var(--color-primary); text-decoration: none; font-size: 0.875rem;">전체보기 →</a>
+                </div>
+                <div class="activity-content">
+                    <div th:if="${recentOrders.empty}" class="no-data">
+                        등록된 주문이 없습니다.
+                    </div>
+                    
+                    <div th:each="order : ${recentOrders}" class="activity-item">
+                        <div>
+                            <div style="font-weight: 500;" th:text="'주문 #' + ${order.id}">주문 ID</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-secondary);" 
+                                 th:text="'고객 ID: ' + ${order.customerId}">고객 정보</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: 600; color: var(--color-primary);" 
+                                 th:text="'₩' + ${#numbers.formatInteger(order.totalAmount ?: 0, 3, 'COMMA')}">₩0</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-secondary);" 
+                                 th:text="${#temporals.format(order.createdAt, 'MM-dd')}">01-21</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 💡 시스템 정보 -->
+        <section class="card" style="margin-top: 32px; background: var(--color-surface-secondary);">
+            <h3>💡 시스템 정보</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
+                <div>
+                    <strong>웹 서버</strong>
+                    <ul style="list-style: none; padding: 0; margin: 8px 0;">
+                        <li>🚀 포트: 8081</li>
+                        <li>🎨 CSS: 적용됨</li>
+                        <li>⚙️ 프로필: test</li>
+                    </ul>
+                </div>
+                <div>
+                    <strong>데이터베이스</strong>
+                    <ul style="list-style: none; padding: 0; margin: 8px 0;">
+                        <li>🗄️ H2 (인메모리)</li>
+                        <li>🔗 자동 연결</li>
+                        <li>📊 테스트 데이터</li>
+                    </ul>
+                </div>
+                <div>
+                    <strong>API 서버</strong>
+                    <ul style="list-style: none; padding: 0; margin: 8px 0;">
+                        <li>🌐 포트: 8080</li>
+                        <li>🔄 REST API</li>
+                        <li>📖 Swagger UI</li>
+                    </ul>
+                </div>
+                <div>
+                    <strong>기능 현황</strong>
+                    <ul style="list-style: none; padding: 0; margin: 8px 0;">
+                        <li>✅ 고객 관리</li>
+                        <li>✅ 주문 관리</li>
+                        <li>🔧 API 연동 중</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 🎯 JavaScript -->
+    <script>
+        // 페이지 로드 시 실시간 정보 업데이트
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboard();
+            
+            // 30초마다 대시보드 업데이트
+            setInterval(updateDashboard, 30000);
+        });
+
+        // 대시보드 정보 업데이트
+        function updateDashboard() {
+            // 현재 시간 표시
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ko-KR');
+            
+            console.log(`[${timeString}] 대시보드 업데이트`);
+            
+            // 실제 환경에서는 API로 실시간 데이터 가져오기
+            // fetchDashboardData();
+        }
+
+        // 대시보드 데이터 가져오기 (실제 구현시)
+        async function fetchDashboardData() {
+            try {
+                // const response = await fetch('/api/dashboard/stats');
+                // const data = await response.json();
+                // updateStatsDisplay(data);
+            } catch (error) {
+                console.error('대시보드 데이터 로드 실패:', error);
+            }
+        }
+
+        // 통계 표시 업데이트
+        function updateStatsDisplay(data) {
+            // 실제 데이터로 통계 카드 업데이트
+        }
+    </script>
+</body>
+</html> 

@@ -70,6 +70,18 @@ public class CustomerService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Customer getCustomerById(Long customerId) {
+        return getCustomer(customerId); // 기존 메서드 재사용
+    }
+
+    @Override
     public Customer updateCustomer(UpdateCustomerCommand command) {
         // 1. 고객 조회
         Customer customer = customerRepository.findById(command.customerId())

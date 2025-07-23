@@ -1,6 +1,7 @@
 package com.project.api.port.out.customer;
 
 import com.project.api.domain.customer.Customer;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -24,6 +25,13 @@ public interface CustomerRepository {
      * @return 고객 정보 (Optional)
      */
     Optional<Customer> findById(Long customerId);
+    
+    /**
+     * 모든 고객을 조회합니다.
+     * 
+     * @return 모든 고객 목록
+     */
+    List<Customer> findAll();
     
     /**
      * 이메일로 고객을 조회합니다.

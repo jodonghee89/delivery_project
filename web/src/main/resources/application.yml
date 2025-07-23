@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: delivery-web
+  
+  # 웹 모듈은 8081 포트에서 실행
+  server:
+    port: 8081
+  
+  # API 모듈과 동일한 데이터베이스 설정 공유
+  profiles:
+    active: local
+    
+  # Thymeleaf 설정
+  thymeleaf:
+    cache: false  # 개발 중에는 캐시 비활성화
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+  # 정적 리소스 설정
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        period: 3600  # 1시간 캐시
+
+# 로깅 설정
+logging:
+  level:
+    com.project.web: DEBUG
+    com.project.api: INFO
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# API 모듈과의 통신 설정 (필요시)
+delivery:
+  api:
+    base-url: http://localhost:8080/delivery
+  web:
+    title: "배달 서비스 관리"
+    description: "배달 서비스 웹 관리 시스템"
+
+---
+# 로컬 개발 환경
+spring:
+  config:
+    activate:
+      on-profile: local
+  
+  datasource:
+    primary:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://localhost:3306/delivery_primary
+      username: delivery_user
+      password: delivery_pass
+      pool-name: PrimaryHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 5
+      
+    secondary:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      jdbc-url: jdbc:mysql://localhost:3307/delivery_secondary
+      username: delivery_user
+      password: delivery_pass
+      pool-name: SecondaryHikariPool
+      maximum-pool-size: 5
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true 

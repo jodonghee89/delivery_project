@@ -1,4 +1,11 @@
 dependencies {
-    // 알림 관련 의존성만 유지
+    // 알림 관련 의존성
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation project(':core')
+}
+
+// 라이브러리 모듈이므로 일반 JAR만 생성
+jar {
+    enabled = true
 }
 

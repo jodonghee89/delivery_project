@@ -85,6 +85,17 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase, Manage
     }
 
     @Override
+    public List<Order> getAllOrders() {
+        log.info("모든 주문 목록 조회");
+        return orderRepository.findAll();
+    }
+
+    @Override
+    public Order getOrderById(Long orderId) {
+        return getOrder(orderId); // 기존 메서드 재사용
+    }
+
+    @Override
     @Transactional
     public void cancelOrder(Long orderId, String cancelReason) {
         log.info("주문 취소 - orderId: {}, reason: {}", orderId, cancelReason);

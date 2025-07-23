@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 테스트 - 배달 서비스</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .api-test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .api-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-subtle);
+        }
+        .api-section h3 {
+            margin: 0 0 16px 0;
+            color: var(--color-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .test-item {
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .test-header {
+            padding: 12px 16px;
+            background: var(--color-surface-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-content {
+            padding: 16px;
+        }
+        .method-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .method-get { background: #dcfce7; color: #15803d; }
+        .method-post { background: #dbeafe; color: #1e40af; }
+        .method-put { background: #fef3c7; color: #92400e; }
+        .method-delete { background: #fee2e2; color: #dc2626; }
+        
+        .test-form {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+        .response-area {
+            background: #f8fafc;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 12px;
+            min-height: 100px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .status-success { color: #059669; }
+        .status-error { color: #dc2626; }
+        .status-info { color: #3b82f6; }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+        .status-online {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-offline {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="api-test-container">
+        <header class="page-header">
+            <h1>🔗 API 연동 테스트</h1>
+            <p>REST API 엔드포인트들을 테스트하고 연동 상태를 확인합니다.</p>
+        </header>
+
+        <!-- 🌐 연결 상태 -->
+        <div id="connectionStatus" class="connection-status status-offline">
+            <span>🔴</span>
+            <span>API 서버 연결 확인 중...</span>
+        </div>
+
+        <!-- 📊 API 정보 -->
+        <div class="api-section">
+            <h3>📊 API 서버 정보</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <strong>Base URL</strong>
+                    <div style="font-family: monospace; color: var(--color-primary);" th:text="${apiBaseUrl}">
+                        http://localhost:8080/delivery
+                    </div>
+                </div>
+                <div>
+                    <strong>Content-Type</strong>
+                    <div style="font-family: monospace;">application/json</div>
+                </div>
+                <div>
+                    <strong>상태</strong>
+                    <div id="serverStatus">확인 중...</div>
+                </div>
+                <div>
+                    <strong>응답 시간</strong>
+                    <div id="responseTime">- ms</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 👥 고객 API 테스트 -->
+        <div class="api-section">
+            <h3>👥 고객 관리 API</h3>
+            
+            <!-- 고객 목록 조회 -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div>
+                        <span class="method-badge method-get">GET</span>
+                        <span style="font-family: monospace; margin-left: 8px;">/customers</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="testGetCustomers()">테스트</button>
+                </div>
+                <div class="test-content">
+                    <p>모든 고객 목록을 조회합니다.</p>
+                    <div class="response-area" id="getCustomersResponse">응답이 여기에 표시됩니다.</div>
+                </div>
+            </div>
+
+            <!-- 고객 등록 -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div>
+                        <span class="method-badge method-post">POST</span>
+                        <span style="font-family: monospace; margin-left: 8px;">/customers</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="testCreateCustomer()">테스트</button>
+                </div>
+                <div class="test-content">
+                    <p>새로운 고객을 등록합니다.</p>
+                    <div class="test-form">
+                        <div class="form-row">
+                            <label>이름:</label>
+                            <input type="text" id="customerName" class="form-input" value="홍길동" placeholder="고객 이름">
+                        </div>
+                        <div class="form-row">
+                            <label>이메일:</label>
+                            <input type="email" id="customerEmail" class="form-input" value="hong@example.com" placeholder="이메일">
+                        </div>
+                        <div class="form-row">
+                            <label>전화번호:</label>
+                            <input type="text" id="customerPhone" class="form-input" value="010-1234-5678" placeholder="전화번호">
+                        </div>
+                        <div class="form-row">
+                            <label>비밀번호:</label>
+                            <input type="password" id="customerPassword" class="form-input" value="password123" placeholder="비밀번호">
+                        </div>
+                    </div>
+                    <div class="response-area" id="createCustomerResponse">응답이 여기에 표시됩니다.</div>
+                </div>
+            </div>
+
+            <!-- 특정 고객 조회 -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div>
+                        <span class="method-badge method-get">GET</span>
+                        <span style="font-family: monospace; margin-left: 8px;">/customers/{id}</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="testGetCustomer()">테스트</button>
+                </div>
+                <div class="test-content">
+                    <div class="form-row">
+                        <label>고객 ID:</label>
+                        <input type="number" id="getCustomerId" class="form-input" value="1" placeholder="고객 ID">
+                    </div>
+                    <div class="response-area" id="getCustomerResponse">응답이 여기에 표시됩니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📦 주문 API 테스트 -->
+        <div class="api-section">
+            <h3>📦 주문 관리 API</h3>
+            
+            <!-- 주문 목록 조회 -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div>
+                        <span class="method-badge method-get">GET</span>
+                        <span style="font-family: monospace; margin-left: 8px;">/orders</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="testGetOrders()">테스트</button>
+                </div>
+                <div class="test-content">
+                    <p>모든 주문 목록을 조회합니다.</p>
+                    <div class="response-area" id="getOrdersResponse">응답이 여기에 표시됩니다.</div>
+                </div>
+            </div>
+
+            <!-- 주문 생성 -->
+            <div class="test-item">
+                <div class="test-header">
+                    <div>
+                        <span class="method-badge method-post">POST</span>
+                        <span style="font-family: monospace; margin-left: 8px;">/orders</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="testCreateOrder()">테스트</button>
+                </div>
+                <div class="test-content">
+                    <p>새로운 주문을 생성합니다.</p>
+                    <div class="test-form">
+                        <div class="form-row">
+                            <label>고객 ID:</label>
+                            <input type="number" id="orderCustomerId" class="form-input" value="1" placeholder="고객 ID">
+                        </div>
+                        <div class="form-row">
+                            <label>매장 ID:</label>
+                            <input type="number" id="orderStoreId" class="form-input" value="1" placeholder="매장 ID">
+                        </div>
+                        <div class="form-row">
+                            <label>배달 주소:</label>
+                            <input type="text" id="orderAddress" class="form-input" value="서울시 강남구 테헤란로 123" placeholder="배달 주소">
+                        </div>
+                        <div class="form-row">
+                            <label>결제 방법:</label>
+                            <select id="orderPayment" class="form-select">
+                                <option value="CARD">카드</option>
+                                <option value="CASH">현금</option>
+                                <option value="TRANSFER">계좌이체</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="response-area" id="createOrderResponse">응답이 여기에 표시됩니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔧 유틸리티 -->
+        <div class="api-section">
+            <h3>🔧 유틸리티</h3>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="checkServerStatus()">🔄 서버 상태 확인</button>
+                <button class="btn btn-secondary" onclick="clearAllResponses()">🗑️ 응답 초기화</button>
+                <button class="btn btn-secondary" onclick="exportTestResults()">💾 결과 내보내기</button>
+                <a href="http://localhost:8080/swagger-ui/index.html" target="_blank" class="btn btn-secondary">
+                    📖 Swagger UI
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 JavaScript -->
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/delivery';
+        let testResults = [];
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServerStatus();
+        });
+
+        // 서버 상태 확인
+        async function checkServerStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const serverStatusElement = document.getElementById('serverStatus');
+            const responseTimeElement = document.getElementById('responseTime');
+            
+            statusElement.className = 'connection-status status-offline';
+            statusElement.innerHTML = '<span>🟡</span><span>API 서버 연결 확인 중...</span>';
+            
+            const startTime = Date.now();
+            
+            try {
+                // 실제 환경에서는 API 상태 확인 엔드포인트 호출
+                // const response = await fetch(`${API_BASE_URL}/health`);
+                
+                // 임시로 시뮬레이션
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const responseTime = Date.now() - startTime;
+                
+                statusElement.className = 'connection-status status-online';
+                statusElement.innerHTML = '<span>🟢</span><span>API 서버 연결됨</span>';
+                serverStatusElement.textContent = '온라인';
+                responseTimeElement.textContent = `${responseTime} ms`;
+                
+            } catch (error) {
+                statusElement.className = 'connection-status status-offline';
+                statusElement.innerHTML = '<span>🔴</span><span>API 서버 연결 실패</span>';
+                serverStatusElement.textContent = '오프라인';
+                responseTimeElement.textContent = '- ms';
+                
+                console.error('서버 상태 확인 실패:', error);
+            }
+        }
+
+        // 응답 표시 함수
+        function displayResponse(elementId, data, status = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            
+            element.className = `response-area status-${status}`;
+            element.textContent = `[${timestamp}] ${JSON.stringify(data, null, 2)}`;
+            
+            // 테스트 결과 저장
+            testResults.push({
+                timestamp,
+                endpoint: elementId,
+                data,
+                status
+            });
+        }
+
+        // ========== 고객 API 테스트 ==========
+
+        async function testGetCustomers() {
+            try {
+                console.log('고객 목록 조회 테스트');
+                
+                // 실제 환경에서는 API 호출
+                /*
+                const response = await fetch(`${API_BASE_URL}/customers`);
+                const data = await response.json();
+                displayResponse('getCustomersResponse', data, 'success');
+                */
+                
+                // 임시 응답
+                const dummyData = {
+                    success: true,
+                    message: "고객 목록 조회 성공 (시뮬레이션)",
+                    data: []
+                };
+                displayResponse('getCustomersResponse', dummyData, 'success');
+                
+            } catch (error) {
+                displayResponse('getCustomersResponse', { error: error.message }, 'error');
+            }
+        }
+
+        async function testCreateCustomer() {
+            try {
+                const customerData = {
+                    name: document.getElementById('customerName').value,
+                    email: document.getElementById('customerEmail').value,
+                    phoneNumber: document.getElementById('customerPhone').value,
+                    password: document.getElementById('customerPassword').value
+                };
+                
+                console.log('고객 등록 테스트:', customerData);
+                
+                // 실제 환경에서는 API 호출
+                /*
+                const response = await fetch(`${API_BASE_URL}/customers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(customerData)
+                });
+                const data = await response.json();
+                displayResponse('createCustomerResponse', data, 'success');
+                */
+                
+                // 임시 응답
+                const dummyResponse = {
+                    success: true,
+                    message: "고객 등록 성공 (시뮬레이션)",
+                    data: { id: 1, ...customerData, createdAt: new Date() }
+                };
+                displayResponse('createCustomerResponse', dummyResponse, 'success');
+                
+            } catch (error) {
+                displayResponse('createCustomerResponse', { error: error.message }, 'error');
+            }
+        }
+
+        async function testGetCustomer() {
+            try {
+                const customerId = document.getElementById('getCustomerId').value;
+                
+                console.log('고객 조회 테스트:', customerId);
+                
+                // 실제 환경에서는 API 호출
+                /*
+                const response = await fetch(`${API_BASE_URL}/customers/${customerId}`);
+                const data = await response.json();
+                displayResponse('getCustomerResponse', data, 'success');
+                */
+                
+                // 임시 응답
+                const dummyResponse = {
+                    success: true,
+                    message: "고객 조회 성공 (시뮬레이션)",
+                    data: {
+                        id: customerId,
+                        name: "홍길동",
+                        email: "hong@example.com",
+                        phoneNumber: "010-1234-5678"
+                    }
+                };
+                displayResponse('getCustomerResponse', dummyResponse, 'success');
+                
+            } catch (error) {
+                displayResponse('getCustomerResponse', { error: error.message }, 'error');
+            }
+        }
+
+        // ========== 주문 API 테스트 ==========
+
+        async function testGetOrders() {
+            try {
+                console.log('주문 목록 조회 테스트');
+                
+                const dummyData = {
+                    success: true,
+                    message: "주문 목록 조회 성공 (시뮬레이션)",
+                    data: []
+                };
+                displayResponse('getOrdersResponse', dummyData, 'success');
+                
+            } catch (error) {
+                displayResponse('getOrdersResponse', { error: error.message }, 'error');
+            }
+        }
+
+        async function testCreateOrder() {
+            try {
+                const orderData = {
+                    customerId: parseInt(document.getElementById('orderCustomerId').value),
+                    storeId: parseInt(document.getElementById('orderStoreId').value),
+                    deliveryAddress: document.getElementById('orderAddress').value,
+                    paymentMethod: document.getElementById('orderPayment').value,
+                    orderItems: [
+                        { menuId: 1, quantity: 2, price: 15000, specialRequests: "매운맛" }
+                    ]
+                };
+                
+                console.log('주문 생성 테스트:', orderData);
+                
+                const dummyResponse = {
+                    success: true,
+                    message: "주문 생성 성공 (시뮬레이션)",
+                    data: { orderId: 1, ...orderData, orderStatus: "PENDING", totalAmount: 30000 }
+                };
+                displayResponse('createOrderResponse', dummyResponse, 'success');
+                
+            } catch (error) {
+                displayResponse('createOrderResponse', { error: error.message }, 'error');
+            }
+        }
+
+        // ========== 유틸리티 함수 ==========
+
+        function clearAllResponses() {
+            const responseAreas = document.querySelectorAll('.response-area');
+            responseAreas.forEach(area => {
+                area.textContent = '응답이 여기에 표시됩니다.';
+                area.className = 'response-area';
+            });
+            testResults = [];
+            console.log('모든 응답이 초기화되었습니다.');
+        }
+
+        function exportTestResults() {
+            const dataStr = JSON.stringify(testResults, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `api-test-results-${new Date().toISOString().slice(0, 19)}.json`;
+            link.click();
+            
+            console.log('테스트 결과가 내보내기되었습니다.');
+        }
+    </script>
+</body>
+</html> 

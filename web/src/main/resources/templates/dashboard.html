@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+
+<head>
+    <title>대시보드 - 배달 서비스 관리</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- 🎨 Page Header -->
+        <div class="page-header">
+            <h1>
+                <i data-lucide="layout-dashboard" style="width: 28px; height: 28px; color: var(--color-info);"></i>
+                대시보드
+            </h1>
+            <p>배달 서비스의 주요 지표와 최근 활동을 한눈에 확인하세요.</p>
+        </div>
+
+        <!-- 📊 Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card fade-in">
+                    <div class="stats-card-content">
+                        <div class="stats-card-info">
+                            <h3 th:text="${totalCustomers}">0</h3>
+                            <p>전체 고객</p>
+                        </div>
+                        <div class="stats-card-icon primary">
+                            <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card fade-in" style="animation-delay: 0.1s;">
+                    <div class="stats-card-content">
+                        <div class="stats-card-info">
+                            <h3 th:text="${totalOrders}">0</h3>
+                            <p>전체 주문</p>
+                        </div>
+                        <div class="stats-card-icon success">
+                            <i data-lucide="shopping-cart" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card fade-in" style="animation-delay: 0.2s;">
+                    <div class="stats-card-content">
+                        <div class="stats-card-info">
+                            <h3>24</h3>
+                            <p>오늘 주문</p>
+                        </div>
+                        <div class="stats-card-icon info">
+                            <i data-lucide="calendar-days" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card fade-in" style="animation-delay: 0.3s;">
+                    <div class="stats-card-content">
+                        <div class="stats-card-info">
+                            <h3>₩1.2M</h3>
+                            <p>월 매출</p>
+                        </div>
+                        <div class="stats-card-icon warning">
+                            <i data-lucide="trending-up" style="width: 20px; height: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📋 Recent Data -->
+        <div class="row">
+            <!-- Recent Customers -->
+            <div class="col-lg-6 mb-4">
+                <div class="card fade-in" style="animation-delay: 0.4s;">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-lucide="user-plus" style="width: 18px; height: 18px; color: var(--color-info);"></i>
+                                <span>최근 등록 고객</span>
+                            </div>
+                            <a href="/customers" class="btn btn-sm btn-secondary">
+                                전체 보기
+                                <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(recentCustomers)}" class="empty-state">
+                            <i data-lucide="users" style="width: 48px; height: 48px;"></i>
+                            <h5>등록된 고객이 없습니다</h5>
+                            <p>새 고객을 등록해보세요.</p>
+                            <a href="/customers/new" class="btn btn-primary btn-sm">
+                                <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                                고객 등록
+                            </a>
+                        </div>
+                        
+                        <div th:if="${!#lists.isEmpty(recentCustomers)}" class="d-flex flex-column gap-3">
+                            <div th:each="customer : ${recentCustomers}" 
+                                 class="d-flex align-items-center justify-content-between p-2"
+                                 style="border-radius: var(--radius); transition: all 0.2s ease;"
+                                 onmouseover="this.style.backgroundColor='var(--color-muted)'"
+                                 onmouseout="this.style.backgroundColor='transparent'">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar">
+                                        <span th:text="${customer.name != null ? #strings.substring(customer.name, 0, 1) : 'U'}">U</span>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 500;" th:text="${customer.name}">고객명</div>
+                                        <div class="text-muted" style="font-size: 0.8125rem;" th:text="${customer.email}">이메일</div>
+                                    </div>
+                                </div>
+                                <a th:href="@{/customers/{id}(id=${customer.id})}" class="btn btn-sm btn-secondary">
+                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="col-lg-6 mb-4">
+                <div class="card fade-in" style="animation-delay: 0.5s;">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-lucide="shopping-bag" style="width: 18px; height: 18px; color: var(--color-success);"></i>
+                                <span>최근 주문</span>
+                            </div>
+                            <a href="/orders" class="btn btn-sm btn-secondary">
+                                전체 보기
+                                <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(recentOrders)}" class="empty-state">
+                            <i data-lucide="shopping-cart" style="width: 48px; height: 48px;"></i>
+                            <h5>주문이 없습니다</h5>
+                            <p>새 주문을 등록해보세요.</p>
+                            <a href="/orders/new" class="btn btn-success btn-sm">
+                                <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                                주문 등록
+                            </a>
+                        </div>
+                        
+                        <div th:if="${!#lists.isEmpty(recentOrders)}" class="d-flex flex-column gap-3">
+                            <div th:each="order : ${recentOrders}" 
+                                 class="d-flex align-items-center justify-content-between p-2"
+                                 style="border-radius: var(--radius); transition: all 0.2s ease;"
+                                 onmouseover="this.style.backgroundColor='var(--color-muted)'"
+                                 onmouseout="this.style.backgroundColor='transparent'">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar" style="background-color: var(--color-success);">
+                                        <i data-lucide="receipt" style="width: 14px; height: 14px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 500;" th:text="'주문 #' + ${order.id}">주문번호</div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-secondary" th:text="${order.status}">상태</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a th:href="@{/orders/{id}(id=${order.id})}" class="btn btn-sm btn-secondary">
+                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⚡ Quick Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card fade-in" style="animation-delay: 0.6s;">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <i data-lucide="zap" style="width: 18px; height: 18px; color: var(--color-warning);"></i>
+                            <span>빠른 작업</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <a href="/customers/new" class="btn btn-outline-primary w-100" style="height: 3rem;">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                                        <span>새 고객 등록</span>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/orders/new" class="btn btn-outline-success w-100" style="height: 3rem;">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i>
+                                        <span>새 주문 등록</span>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/customers" class="btn btn-secondary w-100" style="height: 3rem;">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+                                        <span>고객 검색</span>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="http://localhost:8080/swagger-ui/index.html" target="_blank" class="btn btn-secondary w-100" style="height: 3rem;">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i data-lucide="code" style="width: 16px; height: 16px;"></i>
+                                        <span>API 문서</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

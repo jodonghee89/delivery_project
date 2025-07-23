@@ -30,6 +30,13 @@ public interface OrderRepository {
     Optional<Order> findById(Long orderId);
     
     /**
+     * 모든 주문을 조회합니다.
+     * 
+     * @return 모든 주문 목록
+     */
+    List<Order> findAll();
+    
+    /**
      * 고객 ID로 주문 목록을 조회합니다.
      * 
      * @param customerId 고객 ID

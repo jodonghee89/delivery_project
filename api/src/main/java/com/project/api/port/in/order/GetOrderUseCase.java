@@ -46,4 +46,19 @@ public interface GetOrderUseCase {
      * @return 배달원의 주문 목록
      */
     List<Order> getDeliveryPersonOrders(Long deliveryPersonId, int page, int size);
+    
+    /**
+     * 모든 주문 목록을 조회합니다.
+     * 
+     * @return 주문 목록
+     */
+    List<Order> getAllOrders();
+    
+    /**
+     * 주문 ID로 주문 정보를 조회합니다. (별칭)
+     * 
+     * @param orderId 주문 ID
+     * @return 주문 정보
+     */
+    Order getOrderById(Long orderId);
 } 

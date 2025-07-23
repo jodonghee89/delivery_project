@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객 관리 - 배달 서비스</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .customer-list-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        .customer-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+        }
+        .customer-table th,
+        .customer-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .customer-table th {
+            background: var(--color-surface-secondary);
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        .customer-table tr:hover {
+            background: var(--color-surface-secondary);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="customer-list-container">
+        <header class="page-header">
+            <h1>👥 고객 관리</h1>
+            <p>고객 정보를 조회하고 관리할 수 있습니다.</p>
+        </header>
+
+        <!-- 🔍 검색 및 필터 -->
+        <div class="search-bar">
+            <input type="text" 
+                   id="searchInput" 
+                   placeholder="고객명, 이메일, 전화번호로 검색..." 
+                   class="form-input" 
+                   style="flex: 1;">
+            <select id="statusFilter" class="form-select">
+                <option value="">전체 상태</option>
+                <option value="active">활성</option>
+                <option value="inactive">비활성</option>
+            </select>
+            <button type="button" class="btn btn-primary" onclick="addCustomer()">
+                ➕ 고객 추가
+            </button>
+        </div>
+
+        <!-- 📊 통계 카드 -->
+        <div class="stats-grid" style="margin-bottom: 24px;">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${totalCustomers}">0</div>
+                <div class="stat-label">전체 고객</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeCustomers">0</div>
+                <div class="stat-label">활성 고객</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="newCustomersThisMonth">0</div>
+                <div class="stat-label">이달의 신규 고객</div>
+            </div>
+        </div>
+
+        <!-- 📋 고객 테이블 -->
+        <div class="card">
+            <table class="customer-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>고객명</th>
+                        <th>이메일</th>
+                        <th>전화번호</th>
+                        <th>주소 수</th>
+                        <th>가입일</th>
+                        <th>상태</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody id="customerTableBody">
+                    <!-- 데이터가 없을 때 -->
+                    <tr th:if="${customers.empty}">
+                        <td colspan="8" style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
+                            📭 등록된 고객이 없습니다.
+                        </td>
+                    </tr>
+                    
+                    <!-- 고객 데이터 -->
+                    <tr th:each="customer : ${customers}">
+                        <td th:text="${customer.id}">1</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="avatar">
+                                    <span th:text="${customer.name?.substring(0,1) ?: '?'}">홍</span>
+                                </div>
+                                <strong th:text="${customer.name}">홍길동</strong>
+                            </div>
+                        </td>
+                        <td th:text="${customer.email}">hong@example.com</td>
+                        <td th:text="${customer.phoneNumber}">010-1234-5678</td>
+                        <td>
+                            <span th:text="${customer.addresses?.size() ?: 0}">2</span>개
+                        </td>
+                        <td th:text="${#temporals.format(customer.createdAt, 'yyyy-MM-dd')}">2025-01-21</td>
+                        <td>
+                            <span class="status-badge status-active">활성</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" 
+                                        class="btn btn-sm btn-secondary" 
+                                        th:onclick="'viewCustomer(' + ${customer.id} + ')'">
+                                    👁️ 보기
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-sm btn-secondary" 
+                                        th:onclick="'editCustomer(' + ${customer.id} + ')'">
+                                    ✏️ 수정
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger" 
+                                        th:onclick="'deleteCustomer(' + ${customer.id} + ', \'' + ${customer.name} + '\')'">
+                                    🗑️ 삭제
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 📄 페이지네이션 -->
+        <div class="pagination" style="margin-top: 24px; text-align: center;">
+            <button type="button" class="btn btn-secondary">← 이전</button>
+            <span style="margin: 0 16px; color: var(--color-text-secondary);">1 / 1 페이지</span>
+            <button type="button" class="btn btn-secondary">다음 →</button>
+        </div>
+    </div>
+
+    <!-- 🎯 JavaScript -->
+    <script>
+        // API 기본 URL
+        const API_BASE_URL = 'http://localhost:8080/delivery';
+
+        // 페이지 로드 시 고객 데이터 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCustomers();
+            
+            // 검색 이벤트
+            document.getElementById('searchInput').addEventListener('input', filterCustomers);
+            document.getElementById('statusFilter').addEventListener('change', filterCustomers);
+        });
+
+        // 고객 목록 로드
+        async function loadCustomers() {
+            try {
+                // 실제 환경에서는 API 호출
+                // const response = await fetch(`${API_BASE_URL}/customers`);
+                // const customers = await response.json();
+                
+                console.log('고객 목록 로드 중...');
+                updateStats();
+            } catch (error) {
+                console.error('고객 목록 로드 실패:', error);
+                showAlert('고객 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('activeCustomers').textContent = '0';
+            document.getElementById('newCustomersThisMonth').textContent = '0';
+        }
+
+        // 검색 및 필터링
+        function filterCustomers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            console.log('검색:', searchTerm, '상태:', statusFilter);
+            // 실제 필터링 로직 구현
+        }
+
+        // 고객 추가
+        function addCustomer() {
+            window.location.href = '/customers/new';
+        }
+
+        // 고객 상세보기
+        function viewCustomer(customerId) {
+            window.location.href = `/customers/${customerId}`;
+        }
+
+        // 고객 수정
+        function editCustomer(customerId) {
+            window.location.href = `/customers/${customerId}/edit`;
+        }
+
+        // 고객 삭제
+        async function deleteCustomer(customerId, customerName) {
+            if (!confirm(`정말로 "${customerName}" 고객을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showAlert('고객이 성공적으로 삭제되었습니다.', 'success');
+                    loadCustomers(); // 목록 새로고침
+                } else {
+                    throw new Error('삭제 실패');
+                }
+            } catch (error) {
+                console.error('고객 삭제 실패:', error);
+                showAlert('고객 삭제에 실패했습니다.', 'error');
+            }
+        }
+
+        // 알림 표시
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                min-width: 300px;
+                background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#3b82f6'};
+            `;
+            alertDiv.textContent = message;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

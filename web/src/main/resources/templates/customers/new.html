@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고객 등록 - 배달 서비스</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-subtle);
+        }
+        .form-section h3 {
+            margin: 0 0 20px 0;
+            color: var(--color-text);
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-label {
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        .form-label.required::after {
+            content: ' *';
+            color: #dc2626;
+        }
+        .form-input, .form-select, .form-textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form-error {
+            color: #dc2626;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .address-finder {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .address-finder input {
+            flex: 1;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding-top: 24px;
+            border-top: 1px solid var(--color-border);
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <header class="page-header">
+            <h1>👤 고객 등록</h1>
+            <p>새로운 고객 정보를 등록합니다.</p>
+        </header>
+
+        <form id="customerForm" onsubmit="submitForm(event)">
+            <!-- 📝 기본 정보 -->
+            <div class="form-section">
+                <h3>📝 기본 정보</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name" class="form-label required">고객명</label>
+                        <input type="text" 
+                               id="name" 
+                               name="name" 
+                               class="form-input" 
+                               placeholder="고객 이름을 입력하세요"
+                               required>
+                        <div class="form-error" id="nameError"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label required">이메일</label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               class="form-input" 
+                               placeholder="example@domain.com"
+                               required>
+                        <div class="form-error" id="emailError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phoneNumber" class="form-label required">전화번호</label>
+                        <input type="tel" 
+                               id="phoneNumber" 
+                               name="phoneNumber" 
+                               class="form-input" 
+                               placeholder="010-1234-5678"
+                               pattern="^010-\d{4}-\d{4}$"
+                               required>
+                        <div class="form-error" id="phoneNumberError"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password" class="form-label required">비밀번호</label>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               class="form-input" 
+                               placeholder="8자 이상 입력하세요"
+                               minlength="8"
+                               required>
+                        <div class="form-error" id="passwordError"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📍 배달 주소 (선택사항) -->
+            <div class="form-section">
+                <h3>📍 기본 배달 주소 <span style="font-weight: normal; color: var(--color-text-secondary); font-size: 0.875rem;">(선택사항)</span></h3>
+                
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="zipCode" class="form-label">우편번호</label>
+                        <div class="address-finder">
+                            <input type="text" 
+                                   id="zipCode" 
+                                   name="zipCode" 
+                                   class="form-input" 
+                                   placeholder="우편번호"
+                                   readonly>
+                            <button type="button" class="btn btn-secondary" onclick="findAddress()">
+                                🔍 주소 찾기
+                            </button>
+                        </div>
+                        <div class="form-error" id="zipCodeError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="address" class="form-label">주소</label>
+                        <input type="text" 
+                               id="address" 
+                               name="address" 
+                               class="form-input" 
+                               placeholder="주소를 입력하세요"
+                               readonly>
+                        <div class="form-error" id="addressError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addressDetail" class="form-label">상세 주소</label>
+                        <input type="text" 
+                               id="addressDetail" 
+                               name="addressDetail" 
+                               class="form-input" 
+                               placeholder="동, 호수 등 상세 주소">
+                        <div class="form-error" id="addressDetailError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addressNickname" class="form-label">주소 별칭</label>
+                        <input type="text" 
+                               id="addressNickname" 
+                               name="addressNickname" 
+                               class="form-input" 
+                               placeholder="집, 회사 등">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🎯 액션 버튼 -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-secondary" onclick="goBack()">
+                    ← 취소
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    💾 고객 등록
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 🎯 JavaScript -->
+    <script>
+        // API 기본 URL
+        const API_BASE_URL = 'http://localhost:8080/delivery';
+
+        // 폼 검증 규칙
+        const validationRules = {
+            name: {
+                required: true,
+                minLength: 2,
+                maxLength: 50
+            },
+            email: {
+                required: true,
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            },
+            phoneNumber: {
+                required: true,
+                pattern: /^010-\d{4}-\d{4}$/
+            },
+            password: {
+                required: true,
+                minLength: 8,
+                maxLength: 20
+            }
+        };
+
+        // 실시간 검증
+        document.addEventListener('DOMContentLoaded', function() {
+            // 전화번호 자동 포맷팅
+            document.getElementById('phoneNumber').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^\d]/g, '');
+                if (value.length >= 3) {
+                    value = value.replace(/(\d{3})(\d{4})(\d{4})/, '010-$2-$3');
+                }
+                e.target.value = value;
+            });
+
+            // 실시간 유효성 검사
+            Object.keys(validationRules).forEach(field => {
+                document.getElementById(field).addEventListener('blur', () => validateField(field));
+            });
+        });
+
+        // 필드 검증
+        function validateField(fieldName) {
+            const field = document.getElementById(fieldName);
+            const value = field.value.trim();
+            const rules = validationRules[fieldName];
+            const errorElement = document.getElementById(fieldName + 'Error');
+            
+            let errorMessage = '';
+
+            if (rules.required && !value) {
+                errorMessage = '필수 입력 항목입니다.';
+            } else if (value && rules.minLength && value.length < rules.minLength) {
+                errorMessage = `최소 ${rules.minLength}자 이상 입력해주세요.`;
+            } else if (value && rules.maxLength && value.length > rules.maxLength) {
+                errorMessage = `최대 ${rules.maxLength}자까지 입력 가능합니다.`;
+            } else if (value && rules.pattern && !rules.pattern.test(value)) {
+                switch (fieldName) {
+                    case 'email':
+                        errorMessage = '올바른 이메일 형식이 아닙니다.';
+                        break;
+                    case 'phoneNumber':
+                        errorMessage = '전화번호 형식이 올바르지 않습니다. (010-XXXX-XXXX)';
+                        break;
+                }
+            }
+
+            errorElement.textContent = errorMessage;
+            field.style.borderColor = errorMessage ? '#dc2626' : '';
+            
+            return !errorMessage;
+        }
+
+        // 전체 폼 검증
+        function validateForm() {
+            let isValid = true;
+            
+            Object.keys(validationRules).forEach(field => {
+                if (!validateField(field)) {
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        // 주소 찾기
+        function findAddress() {
+            // Daum 우편번호 API 연동 (실제 구현시)
+            alert('주소 찾기 API가 연동되어야 합니다.\n(Daum 우편번호 서비스 등)');
+            
+            // 테스트용 더미 데이터
+            document.getElementById('zipCode').value = '12345';
+            document.getElementById('address').value = '서울특별시 강남구 테헤란로 123';
+        }
+
+        // 폼 제출
+        async function submitForm(event) {
+            event.preventDefault();
+            
+            if (!validateForm()) {
+                showAlert('입력한 정보를 다시 확인해주세요.', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ 등록 중...';
+
+                const formData = new FormData(event.target);
+                const customerData = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phoneNumber: formData.get('phoneNumber'),
+                    password: formData.get('password'),
+                    address: formData.get('address') || null,
+                    addressDetail: formData.get('addressDetail') || null,
+                    zipCode: formData.get('zipCode') || null
+                };
+
+                console.log('고객 등록 데이터:', customerData);
+
+                // API 호출 (실제 환경에서)
+                /*
+                const response = await fetch(`${API_BASE_URL}/customers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(customerData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || '고객 등록에 실패했습니다.');
+                }
+
+                const result = await response.json();
+                */
+
+                // 임시 성공 처리
+                showAlert('고객이 성공적으로 등록되었습니다!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = '/customers';
+                }, 1500);
+
+            } catch (error) {
+                console.error('고객 등록 실패:', error);
+                showAlert(error.message || '고객 등록에 실패했습니다.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // 뒤로 가기
+        function goBack() {
+            if (confirm('작성 중인 내용이 사라집니다. 정말 돌아가시겠습니까?')) {
+                window.location.href = '/customers';
+            }
+        }
+
+        // 알림 표시
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                min-width: 300px;
+                background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#3b82f6'};
+            `;
+            alertDiv.textContent = message;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

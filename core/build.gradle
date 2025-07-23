@@ -2,10 +2,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 }
 
-bootJar {
-    enabled = false
-}
-
+// 라이브러리 모듈이므로 일반 JAR만 생성
 jar {
     enabled = true
 }
