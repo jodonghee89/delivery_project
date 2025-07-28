@@ -43,6 +43,7 @@ public class CustomerJpaAdapter implements CustomerRepository {
 
     @Override
     public Optional<Customer> findByPhoneNumber(String phoneNumber) {
+        // 실제 Repository 메서드명은 엔티티 필드명(phone)을 기준으로 함
         return springDataRepository.findByPhone(phoneNumber);
     }
 
@@ -53,6 +54,7 @@ public class CustomerJpaAdapter implements CustomerRepository {
 
     @Override
     public boolean existsByPhoneNumber(String phoneNumber) {
+        // 실제 Repository 메서드명은 엔티티 필드명(phone)을 기준으로 함
         return springDataRepository.existsByPhone(phoneNumber);
     }
 

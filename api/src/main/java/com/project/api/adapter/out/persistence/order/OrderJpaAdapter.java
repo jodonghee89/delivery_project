@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -66,6 +68,8 @@ public class OrderJpaAdapter implements OrderRepository {
     interface SpringDataOrderRepository extends JpaRepository<Order, Long> {
         Page<Order> findByCustomerId(Long customerId, Pageable pageable);
         Page<Order> findByStoreId(Long storeId, Pageable pageable);
-        Page<Order> findByDeliveryPersonId(Long deliveryPersonId, Pageable pageable);
+
+        @Query("SELECT o FROM Order o WHERE o.deliveryPerson.id = :deliveryPersonId")
+        Page<Order> findByDeliveryPersonId(@Param("deliveryPersonId") Long deliveryPersonId, Pageable pageable);
     }
 } 
