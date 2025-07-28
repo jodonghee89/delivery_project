@@ -59,17 +59,4 @@ public class OrderJpaAdapter implements OrderRepository {
     public void deleteById(Long orderId) {
         springDataRepository.deleteById(orderId);
     }
-
-    /**
-     * Spring Data JPA Repository 인터페이스
-     * 내부에서만 사용하는 실제 JPA 구현체
-     */
-    @Repository
-    interface SpringDataOrderRepository extends JpaRepository<Order, Long> {
-        Page<Order> findByCustomerId(Long customerId, Pageable pageable);
-        Page<Order> findByStoreId(Long storeId, Pageable pageable);
-
-        @Query("SELECT o FROM Order o WHERE o.deliveryPerson.id = :deliveryPersonId")
-        Page<Order> findByDeliveryPersonId(@Param("deliveryPersonId") Long deliveryPersonId, Pageable pageable);
-    }
 } 

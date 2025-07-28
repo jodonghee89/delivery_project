@@ -62,16 +62,4 @@ public class CustomerJpaAdapter implements CustomerRepository {
     public void deleteById(Long customerId) {
         springDataRepository.deleteById(customerId);
     }
-
-    /**
-     * Spring Data JPA Repository 인터페이스
-     * 내부에서만 사용하는 실제 JPA 구현체
-     */
-    @Repository
-    interface SpringDataCustomerRepository extends JpaRepository<Customer, Long> {
-        Optional<Customer> findByEmail(String email);
-        Optional<Customer> findByPhone(String phone);
-        boolean existsByEmail(String email);
-        boolean existsByPhone(String phone);
-    }
 } 
