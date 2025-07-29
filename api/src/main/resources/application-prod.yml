@@ -65,4 +65,11 @@ logging:
   logback:
     rollingpolicy:
       max-file-size: 100MB
-      max-history: 30 
+      max-history: 30
+
+# JWT 설정 (운영 환경)
+jwt:
+  secret: ${JWT_SECRET}  # 환경 변수로 관리 (필수)
+  access-token-validity-in-milliseconds: 1800000     # 30분 (보안 강화)
+  refresh-token-validity-in-milliseconds: 259200000  # 3일 (보안 강화)
+  token-type: Bearer 

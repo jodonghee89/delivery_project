@@ -2,9 +2,11 @@ package com.project.api.application.service.customer;
 
 import com.project.api.domain.customer.Customer;
 import com.project.api.domain.customer.CustomerAddress;
+import com.project.api.config.JwtTokenProvider;
 import com.project.api.port.in.customer.*;
 import com.project.api.port.out.customer.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +24,12 @@ public class CustomerService implements
     GetCustomerUseCase,
     UpdateCustomerUseCase,
     DeleteCustomerUseCase,
-    ManageCustomerAddressUseCase {
+    ManageCustomerAddressUseCase,
+    LoginUseCase {
 
     private final CustomerRepository customerRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Customer createCustomer(CreateCustomerCommand command) {
@@ -38,15 +43,18 @@ public class CustomerService implements
             throw new RuntimeException("이미 존재하는 전화번호입니다: " + command.phoneNumber());
         }
 
-        // 3. 고객 도메인 객체 생성
+        // 3. 패스워드 암호화
+        String encodedPassword = passwordEncoder.encode(command.password());
+
+        // 4. 고객 도메인 객체 생성 (암호화된 패스워드 사용)
         Customer customer = Customer.builder()
             .name(command.name())
             .email(command.email())
             .phoneNumber(command.phoneNumber())
-            .password(command.password()) // TODO: 실제로는 암호화 필요
+            .password(encodedPassword)
             .build();
 
-        // 4. 첫 번째 주소가 있다면 추가
+        // 5. 첫 번째 주소가 있다면 추가
         if (command.address() != null && !command.address().isBlank()) {
             CustomerAddress firstAddress = CustomerAddress.builder()
                 .address(command.address())
@@ -58,7 +66,7 @@ public class CustomerService implements
             customer.addAddress(firstAddress);
         }
 
-        // 5. 저장
+        // 6. 저장
         return customerRepository.save(customer);
     }
 
@@ -79,6 +87,26 @@ public class CustomerService implements
     @Transactional(readOnly = true)
     public Customer getCustomerById(Long customerId) {
         return getCustomer(customerId); // 기존 메서드 재사용
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LoginResult login(LoginCommand command) {
+        // 1. 이메일로 고객 조회
+        Customer customer = customerRepository.findByEmail(command.email())
+                .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 일치하지 않습니다."));
+
+        // 2. 패스워드 검증 (BCrypt 사용)
+        if (!customer.isPasswordMatch(command.password(), passwordEncoder)) {
+            throw new RuntimeException("이메일 또는 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 3. JWT 토큰 생성
+        String accessToken = jwtTokenProvider.generateAccessToken(customer.getCustomerId(), customer.getName());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(customer.getCustomerId());
+
+        // 4. 로그인 결과 반환
+        return new LoginResult(accessToken, refreshToken, customer.getCustomerId(), customer.getName());
     }
 
     @Override

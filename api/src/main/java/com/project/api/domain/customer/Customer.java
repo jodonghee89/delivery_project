@@ -162,6 +162,21 @@ public class Customer {
                 .orElse(null);
     }
 
+    /**
+     * 패스워드 일치 여부 확인 (BCrypt 사용)
+     * 
+     * @param inputPassword 입력된 평문 패스워드
+     * @param passwordEncoder BCrypt 패스워드 인코더
+     * @return 패스워드 일치 여부
+     */
+    public boolean isPasswordMatch(String inputPassword, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+        if (inputPassword == null || this.password == null) {
+            return false;
+        }
+        // BCrypt를 사용한 안전한 패스워드 검증
+        return passwordEncoder.matches(inputPassword, this.password);
+    }
+
     // == 유효성 검증 == //
     
     private void validateEmail(String email) {

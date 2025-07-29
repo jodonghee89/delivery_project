@@ -1,5 +1,6 @@
 package com.project.api.adapter.in.web.customer.dto;
 
+import com.project.api.port.in.customer.LoginUseCase;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,4 +19,4 @@ public record LoginRequest(
     @Schema(description = "비밀번호", example = "mypassword123", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "비밀번호는 필수입니다")
     String password
-) {} 
+) implements LoginUseCase.LoginCommand {} 

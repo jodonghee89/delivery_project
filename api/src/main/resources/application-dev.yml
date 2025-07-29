@@ -51,4 +51,11 @@ logging:
   level:
     root: INFO
     com.project: DEBUG
-    org.hibernate.SQL: DEBUG 
+    org.hibernate.SQL: DEBUG
+
+# JWT 설정
+jwt:
+  secret: delivery-project-dev-jwt-secret-key-2024-change-this-in-production-environment
+  access-token-validity-in-milliseconds: 3600000    # 1시간
+  refresh-token-validity-in-milliseconds: 604800000  # 7일
+  token-type: Bearer 

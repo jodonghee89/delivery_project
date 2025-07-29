@@ -76,4 +76,11 @@ logging:
     root: INFO
     com.project: DEBUG
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG 
+    org.hibernate.SQL: DEBUG
+
+# JWT 설정
+jwt:
+  secret: delivery-project-local-jwt-secret-key-2024-must-be-at-least-256-bits-for-security
+  access-token-validity-in-milliseconds: 3600000    # 1시간
+  refresh-token-validity-in-milliseconds: 604800000  # 7일
+  token-type: Bearer 
