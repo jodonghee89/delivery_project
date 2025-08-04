@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # MySQL Primary (Master) Database
+  primary-mysql:
+    image: mysql:8.0
+    container_name: delivery-primary-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: delivery
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mysql-replication/primary/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql-replication/primary/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_primary_data:/var/lib/mysql
+    networks:
+      - delivery-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # MySQL Secondary (Slave) Database
+  secondary-mysql:
+    image: mysql:8.0
+    container_name: delivery-secondary-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: delivery
+    ports:
+      - "3308:3306"
+    depends_on:
+      primary-mysql:
+        condition: service_healthy
+    volumes:
+      - ./mysql-replication/secondary/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql-replication/primary/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mysql-replication/secondary/setup-replication.sh:/setup-replication.sh
+      - mysql_secondary_data:/var/lib/mysql
+    networks:
+      - delivery-network
+    entrypoint: ["/bin/bash", "-c", "docker-entrypoint.sh mysqld & sleep 30 && bash /setup-replication.sh && wait"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis for Session & Cache
+  redis:
+    image: redis:7.2-alpine
+    container_name: delivery-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - delivery-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Redis Commander (Web UI for Redis management)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: delivery-redis-ui
+    hostname: redis-commander
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - delivery-network
+    restart: unless-stopped
+
+volumes:
+  mysql_primary_data:
+  mysql_secondary_data:
+  redis_data:
+
+networks:
+  delivery-network:
+    driver: bridge 

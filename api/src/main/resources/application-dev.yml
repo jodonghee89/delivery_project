@@ -56,6 +56,6 @@ logging:
 # JWT 설정
 jwt:
   secret: delivery-project-dev-jwt-secret-key-2024-change-this-in-production-environment
-  access-token-validity-in-milliseconds: 3600000    # 1시간
+  access-token-validity-in-milliseconds: 900000     # 15분
   refresh-token-validity-in-milliseconds: 604800000  # 7일
   token-type: Bearer 

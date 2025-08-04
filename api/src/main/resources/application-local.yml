@@ -35,6 +35,18 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+  # Redis 설정 (Refresh Token 저장용)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
 # SpringDoc 3.x 설정
 springdoc:
   api-docs:
@@ -81,6 +93,6 @@ logging:
 # JWT 설정
 jwt:
   secret: delivery-project-local-jwt-secret-key-2024-must-be-at-least-256-bits-for-security
-  access-token-validity-in-milliseconds: 3600000    # 1시간
+  access-token-validity-in-milliseconds: 900000     # 15분 (900초 = 15분)
   refresh-token-validity-in-milliseconds: 604800000  # 7일
   token-type: Bearer 

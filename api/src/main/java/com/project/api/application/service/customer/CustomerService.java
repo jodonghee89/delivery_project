@@ -3,6 +3,7 @@ package com.project.api.application.service.customer;
 import com.project.api.domain.customer.Customer;
 import com.project.api.domain.customer.CustomerAddress;
 import com.project.api.config.JwtTokenProvider;
+import com.project.api.config.RefreshTokenRepository;
 import com.project.api.port.in.customer.*;
 import com.project.api.port.out.customer.CustomerRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +26,13 @@ public class CustomerService implements
     UpdateCustomerUseCase,
     DeleteCustomerUseCase,
     ManageCustomerAddressUseCase,
-    LoginUseCase {
+    LoginUseCase,
+    RefreshTokenUseCase {
 
     private final CustomerRepository customerRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     public Customer createCustomer(CreateCustomerCommand command) {
@@ -105,7 +108,11 @@ public class CustomerService implements
         String accessToken = jwtTokenProvider.generateAccessToken(customer.getCustomerId(), customer.getName());
         String refreshToken = jwtTokenProvider.generateRefreshToken(customer.getCustomerId());
 
-        // 4. 로그인 결과 반환
+        // 4. Refresh Token을 Redis에 저장 (7일 만료)
+        long refreshTokenValidityInSeconds = 604800; // 7일을 초로 변환
+        refreshTokenRepository.saveRefreshToken(customer.getCustomerId(), refreshToken, refreshTokenValidityInSeconds);
+
+        // 5. 로그인 결과 반환
         return new LoginResult(accessToken, refreshToken, customer.getCustomerId(), customer.getName());
     }
 
@@ -258,5 +265,47 @@ public class CustomerService implements
         customerRepository.save(customer);
     }
 
+    // ===== RefreshTokenUseCase 구현 =====
 
+    @Override
+    @Transactional(readOnly = true)
+    public RefreshTokenResult refreshToken(RefreshTokenCommand command) {
+        // 1. Refresh Token에서 고객 ID 추출
+        Long customerId;
+        try {
+            customerId = jwtTokenProvider.getCustomerIdFromToken(command.refreshToken());
+        } catch (Exception e) {
+            throw new RuntimeException("유효하지 않은 Refresh Token입니다.");
+        }
+
+        // 2. Refresh Token 유효성 검증 (JWT 자체 + Redis 저장 토큰 비교)
+        if (!jwtTokenProvider.validateToken(command.refreshToken())) {
+            throw new RuntimeException("만료되거나 유효하지 않은 Refresh Token입니다.");
+        }
+
+        if (!refreshTokenRepository.validateRefreshToken(customerId, command.refreshToken())) {
+            throw new RuntimeException("저장된 Refresh Token과 일치하지 않습니다.");
+        }
+
+        // 3. 고객 정보 조회
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("고객을 찾을 수 없습니다: " + customerId));
+
+        // 4. 새로운 토큰들 생성
+        String newAccessToken = jwtTokenProvider.generateAccessToken(customer.getCustomerId(), customer.getName());
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(customer.getCustomerId());
+
+        // 5. 새로운 Refresh Token을 Redis에 저장 (기존 토큰 덮어쓰기)
+        long refreshTokenValidityInSeconds = 604800; // 7일
+        refreshTokenRepository.saveRefreshToken(customer.getCustomerId(), newRefreshToken, refreshTokenValidityInSeconds);
+
+        // 6. 갱신 결과 반환
+        return new RefreshTokenResult(newAccessToken, newRefreshToken, customer.getCustomerId(), customer.getName());
+    }
+
+    @Override
+    public void logout(Long customerId) {
+        // Refresh Token 삭제로 로그아웃 처리
+        refreshTokenRepository.deleteAllRefreshTokensForCustomer(customerId);
+    }
 }

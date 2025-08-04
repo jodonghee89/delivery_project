@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
  * Order REST API 통합 테스트
  * 실제 스프링 컨텍스트와 데이터베이스를 사용한 통합 테스트
  */
-@SpringBootTest
+@SpringBootTest(classes = com.project.api.TestApiApplication.class)
 @AutoConfigureWebMvc
 @ActiveProfiles("test")
 @Transactional

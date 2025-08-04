@@ -10,7 +10,7 @@ import javax.sql.DataSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = TestApiApplication.class)
 @ActiveProfiles("local")
 class ApiApplicationTests {
 
