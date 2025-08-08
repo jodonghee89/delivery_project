@@ -28,6 +28,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: delivery
+      MYSQL_REPLICATION_MODE: slave
+      MYSQL_MASTER_HOST: primary-mysql
+      MYSQL_MASTER_PORT: 3306
+      MYSQL_MASTER_USER: repl
+      MYSQL_MASTER_PASSWORD: repl_password
     ports:
       - "3308:3306"
     depends_on:
@@ -37,14 +42,21 @@ services:
       - ./mysql-replication/secondary/my.cnf:/etc/mysql/conf.d/my.cnf
       - ./mysql-replication/primary/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./mysql-replication/secondary/setup-replication.sh:/setup-replication.sh
+      - ./mysql-replication/secondary/init-secondary.sh:/init-secondary.sh
       - mysql_secondary_data:/var/lib/mysql
     networks:
       - delivery-network
-    entrypoint: ["/bin/bash", "-c", "docker-entrypoint.sh mysqld & sleep 30 && bash /setup-replication.sh && wait"]
+    entrypoint: ["/bin/bash", "/init-secondary.sh"]
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: [
+        "CMD", 
+        "bash", "-c",
+        "mysqladmin ping -h localhost --silent && mysql -h localhost -u root -p$$MYSQL_ROOT_PASSWORD -e 'SHOW SLAVE STATUS\\G' | grep -q 'Slave_IO_Running: Yes'"
+      ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # Redis for Session & Cache
   redis:
@@ -70,7 +82,7 @@ services:
     container_name: delivery-redis-ui
     hostname: redis-commander
     ports:
-      - "8081:8081"
+      - "8082:8081"
     environment:
       - REDIS_HOSTS=local:redis:6379
     depends_on:
